@@ -17,11 +17,16 @@ from lib.indexer import build_matrix_record, index_repo, save_index
 
 def cmd_parse(args: argparse.Namespace) -> int:
     m = parse_trix(args.file)
-    print(json.dumps({
-        "titl": m.titl,
-        "skin_hint": m.skin_hint,
-        "cells": m.raw_cells,
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "titl": m.titl,
+                "skin_hint": m.skin_hint,
+                "cells": m.raw_cells,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -47,37 +52,34 @@ def cmd_index(args: argparse.Namespace) -> int:
 def cmd_zoom(args: argparse.Namespace) -> int:
     rec = build_matrix_record(Path(args.file))
     cell = next(
-        (
-            c
-            for c in rec.cells
-            if c.slot == args.cell or str(c.token) == str(args.cell)
-        ),
+        (c for c in rec.cells if c.slot == args.cell or str(c.token) == str(args.cell)),
         None,
     )
     if not cell:
         print(f"No such cell: {args.cell}")
         return 2
 
-    print(json.dumps({
-        "matrix": rec.titl,
-        "cell": {
-            "slot": cell.slot,
-            "token": cell.token,
-            "kind": cell.kind,
-            "payload": cell.payload,
-        }
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "matrix": rec.titl,
+                "cell": {
+                    "slot": cell.slot,
+                    "token": cell.token,
+                    "kind": cell.kind,
+                    "payload": cell.payload,
+                },
+            },
+            indent=2,
+        )
+    )
     return 0
 
 
 def cmd_context(args: argparse.Namespace) -> int:
     rec = build_matrix_record(Path(args.file))
     cell = next(
-        (
-            c
-            for c in rec.cells
-            if c.slot == args.cell or str(c.token) == str(args.cell)
-        ),
+        (c for c in rec.cells if c.slot == args.cell or str(c.token) == str(args.cell)),
         None,
     )
     if not cell:
@@ -95,7 +97,9 @@ def cmd_context(args: argparse.Namespace) -> int:
         "facets": {},
     }
 
-    facets = (cell.payload.get("facets") or {}) if isinstance(cell.payload, dict) else {}
+    facets = (
+        (cell.payload.get("facets") or {}) if isinstance(cell.payload, dict) else {}
+    )
     for facet_name, rel_path in facets.items():
         p = (Path(args.repo) / rel_path).resolve()
         if p.exists():
@@ -114,10 +118,12 @@ def cmd_context(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(prog="trix", description="TRIX geometry-first parser/indexer")
+    ap = argparse.ArgumentParser(
+        prog="trix", description="TRIX geometry-first parser/indexer"
+    )
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("parse", help="Parse a .trix file into a canonical AST (JSON)." )
+    p = sub.add_parser("parse", help="Parse a .trix file into a canonical AST (JSON).")
     p.add_argument("file")
     p.set_defaults(fn=cmd_parse)
 
@@ -132,10 +138,17 @@ def main() -> int:
 
     z = sub.add_parser("zoom", help="Inspect one cell binding (geometry preserved).")
     z.add_argument("file")
-    z.add_argument("--cell", type=int, required=True, help="Slot number 1..9 (or token if numeric)." )
+    z.add_argument(
+        "--cell",
+        type=int,
+        required=True,
+        help="Slot number 1..9 (or token if numeric).",
+    )
     z.set_defaults(fn=cmd_zoom)
 
-    c = sub.add_parser("context", help="Build an agent context bundle for a cell (includes facets).")
+    c = sub.add_parser(
+        "context", help="Build an agent context bundle for a cell (includes facets)."
+    )
     c.add_argument("file")
     c.add_argument("--cell", type=int, required=True)
     c.add_argument("--repo", default=".", help="Repo root for resolving facet paths.")

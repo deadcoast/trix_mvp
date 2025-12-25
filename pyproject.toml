@@ -8,4 +8,138 @@ dependencies = [
     "black>=25.12.0",
     "isort>=7.0.0",
     "sourcery>=1.41.1",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.3.0",
+    "types-requests>=244.178.44.111",
+    "types-urllib3>=244.178.44.111",
+    "types-python-dateutil>=244.178.44.111",
+    "types-pytz>=2089.0.142.86",
+    "types-setuptools>=244.178.44.111",
+    "types-PyYAML>=244.178.44.111",
+    "types-toml>=244.178.44.111",
+    "types-attrs>=244.178.44.111",
+    "types-freezegun>=244.178.44.111",
+    "types-tabulate>=244.178.44.111",
+    "types-pygments>=244.178.44.111",
+    "types-ruamel.yaml>=244.178.44.111",]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
 ]
+
+[project.urls]
+"Homepage" = "https://deadcoast.net"
+"Repository" = "https://github.com/deadcoast/trix"
+"Issues" = "https://github.com/deadcoast/trix/issues"
+
+[tool.black]
+line-length = 120
+target-version = ['py313']
+skip-string-normalization = true
+include = '\.pyi?$'
+exclude = '''
+/(\.
+    git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/x
+''' 
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["trix"]
+known_third_party = [
+    "attrs",
+    "black",
+    "dateutil",
+    "freezegun",
+    "mypy",
+    "pytest",
+    "requests",
+    "ruamel.yaml",
+    "tabulate",
+    "toml",
+    "urllib3",
+    "yaml",
+]
+skip_gitignore = true
+include_trailing_comma = true
+multi_line_output = 3
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+lines_after_imports = 2     
+lines_between_types = 1
+combine_as_imports = true
+default_section = "THIRDPARTY"
+known_standard_library = ["typing_extensions"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+skip = ["build/", "dist/", ".venv/"]
+
+[tool.mypy]
+check_untyped_defs = true
+ignore_missing_imports = true    
+warn_redundant_casts = true
+warn_unused_ignores = true    
+warn_unused_configs = true    
+warn_unreachable = true    
+warn_no_return = true    
+warn_return_any = true    
+strict_optional = true    
+strict_equality = true    
+no_implicit_optional = true    
+show_error_codes = true    
+local_partial_types = true    
+implicit_reexport = false    
+strict = true    
+disallow_untyped_defs = true    
+disallow_incomplete_defs = true    
+disallow_untyped_calls = true    
+disallow_untyped_decorators = true    
+disallow_subclassing_any = true    
+disallow_any_generics = true    
+disallow_any_unimported = true    
+disallow_any_expr = true    
+disallow_any_decorated = true    
+disallow_any_explicit = true    
+follow_imports = "silent"
+files = ["src/trix", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--cov=trix --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.sourcery]
+config = ".sourcery.toml"
+cache = ".sourcery_cache"
+enabled = true
+exclude = ["tests/*"]
+ignore = []
+include = ["trix/*"]
+max_line_length = 120
+min_effort = "medium"
+min_improvement = 0.1
+no_line_breaks = true
+processes = 4
+
+[build-system]
+requires = ["setuptools>=65.5.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["trix*", "trix.*"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+zip-safe = false

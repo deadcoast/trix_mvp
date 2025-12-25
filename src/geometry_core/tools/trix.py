@@ -87,7 +87,9 @@ def detect_titl_near(lines: List[str], line_idx: int, anchor_col: int) -> Option
         return best.group(1)
 
     # fallback: same line
-    matches = list(TITL_RE.finditer(lines[line_idx])) if 0 <= line_idx < len(lines) else []
+    matches = (
+        list(TITL_RE.finditer(lines[line_idx])) if 0 <= line_idx < len(lines) else []
+    )
     if matches:
         best = min(matches, key=lambda m: abs(m.start() - anchor_col))
         return best.group(1)
@@ -110,9 +112,9 @@ class CellBox:
 @dataclass
 class ParsedBlock:
     titl: Optional[str]
-    rows: List[List[int]]           # 3 rows x 3 cols of numeric tokens
-    row_lines: List[int]            # line indices where each row was found
-    cells: List[CellBox]            # 9 CellBox entries with text-space coordinates
+    rows: List[List[int]]  # 3 rows x 3 cols of numeric tokens
+    row_lines: List[int]  # line indices where each row was found
+    cells: List[CellBox]  # 9 CellBox entries with text-space coordinates
     skin: Optional[str] = None
 
 
@@ -124,7 +126,10 @@ def parse_first_block(text: str) -> ParsedBlock:
     candidate: List[Tuple[int, List[Tuple[int, int, int]]]] = []
     for i, line in enumerate(lines):
         # capture (token, col0, col1)
-        toks = [(int(m.group(1).strip()), m.start(), m.end() - 1) for m in CELL_RE.finditer(line)]
+        toks = [
+            (int(m.group(1).strip()), m.start(), m.end() - 1)
+            for m in CELL_RE.finditer(line)
+        ]
         if len(toks) == 3:
             candidate.append((i, toks))
 
@@ -133,7 +138,11 @@ def parse_first_block(text: str) -> ParsedBlock:
         i1, t1 = candidate[idx + 1]
         i2, t2 = candidate[idx + 2]
         if i1 == i0 + 1 and i2 == i1 + 1:
-            rows = [[t for (t, _, _) in t0], [t for (t, _, _) in t1], [t for (t, _, _) in t2]]
+            rows = [
+                [t for (t, _, _) in t0],
+                [t for (t, _, _) in t1],
+                [t for (t, _, _) in t2],
+            ]
             row_lines = [i0, i1, i2]
 
             # anchor column = first '[' in first row
@@ -144,12 +153,18 @@ def parse_first_block(text: str) -> ParsedBlock:
             slot = 1
             for r_idx, (li, row) in enumerate(zip(row_lines, [t0, t1, t2])):
                 for c_idx, (tok, c0, c1) in enumerate(row):
-                    cells.append(CellBox(slot=slot, token=tok, line=li, col0=c0, col1=c1))
+                    cells.append(
+                        CellBox(slot=slot, token=tok, line=li, col0=c0, col1=c1)
+                    )
                     slot += 1
 
-            return ParsedBlock(titl=titl, rows=rows, row_lines=row_lines, cells=cells, skin=skin)
+            return ParsedBlock(
+                titl=titl, rows=rows, row_lines=row_lines, cells=cells, skin=skin
+            )
 
-    raise ValueError("No 3x3 block found: expected 3 consecutive lines with 3 cells each.")
+    raise ValueError(
+        "No 3x3 block found: expected 3 consecutive lines with 3 cells each."
+    )
 
 
 @dataclass
@@ -179,8 +194,8 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
     @dataclass(frozen=True)
     class RowCand:
         line: int
-        anchor_col: int           # col0 of first cell token in the row triple
-        toks: List[Tuple[int,int,int]]  # (token, col0, col1) ×3
+        anchor_col: int  # col0 of first cell token in the row triple
+        toks: List[Tuple[int, int, int]]  # (token, col0, col1) ×3
 
     # Heuristics: inside a 3×3 row, tokens are close; between matrices there's a bigger gap.
     MAX_WITHIN_GAP = 8
@@ -188,7 +203,10 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
     row_cands_by_line: Dict[int, List[RowCand]] = {}
 
     for li, line in enumerate(lines):
-        toks = [(int(m.group(1).strip()), m.start(), m.end() - 1) for m in CELL_RE.finditer(line)]
+        toks = [
+            (int(m.group(1).strip()), m.start(), m.end() - 1)
+            for m in CELL_RE.finditer(line)
+        ]
         if len(toks) < 3:
             continue
 
@@ -215,7 +233,7 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
             row_cands_by_line[li] = list(dedup.values())
 
     blocks: List[ParsedBlock] = []
-    seen: set[Tuple[int,int]] = set()  # (start_line, anchor_col)
+    seen: set[Tuple[int, int]] = set()  # (start_line, anchor_col)
 
     for li0, cands0 in row_cands_by_line.items():
         li1, li2 = li0 + 1, li0 + 2
@@ -247,10 +265,20 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
             slot = 1
             for li, row in zip(row_lines, [c0.toks, c1.toks, c2.toks]):
                 for tok, c0x, c1x in row:
-                    cells.append(CellBox(slot=slot, token=tok, line=li, col0=c0x, col1=c1x))
+                    cells.append(
+                        CellBox(slot=slot, token=tok, line=li, col0=c0x, col1=c1x)
+                    )
                     slot += 1
 
-            blocks.append(ParsedBlock(titl=titl, rows=[r0, r1, r2], row_lines=row_lines, cells=cells, skin=skin))
+            blocks.append(
+                ParsedBlock(
+                    titl=titl,
+                    rows=[r0, r1, r2],
+                    row_lines=row_lines,
+                    cells=cells,
+                    skin=skin,
+                )
+            )
             seen.add((li0, anchor))
 
     return blocks
@@ -361,7 +389,9 @@ def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, 
             hlabel_idx = i
             break
     if hlabel_idx is None:
-        raise ValueError("Could not find horizontal gutter line starting with '|01|02|'")
+        raise ValueError(
+            "Could not find horizontal gutter line starting with '|01|02|'"
+        )
 
     hlabel = lines[hlabel_idx]
     bars = [m.start() for m in re.finditer(r"\|", hlabel)]
@@ -416,7 +446,9 @@ def resolve_coordinate(text: str, line: int, col: int) -> Dict[str, object]:
     }
 
 
-def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int) -> Dict[str, object]:
+def extract_region_vlg_hlg(
+    text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
+) -> Dict[str, object]:
     """Extract a rectangular region from a native-gutter junction canvas (vlg/hlg).
 
     Returns the raw text slice for each vlg row included.
@@ -430,7 +462,9 @@ def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
             hlabel_idx = i
             break
     if hlabel_idx is None:
-        raise ValueError("Could not find horizontal gutter line starting with '|01|02|'")
+        raise ValueError(
+            "Could not find horizontal gutter line starting with '|01|02|'"
+        )
 
     hlabel = lines[hlabel_idx]
     bars = [m.start() for m in re.finditer(r"\|", hlabel)]
@@ -456,11 +490,13 @@ def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
     rows = []
     for v in range(vmax, vmin - 1, -1):  # preserve the visual top-down order
         li = v_to_line[v]
-        rows.append({
-            "vlg": v,
-            "line": li,
-            "slice": lines[li][x0:x1 + 1],
-        })
+        rows.append(
+            {
+                "vlg": v,
+                "line": li,
+                "slice": lines[li][x0 : x1 + 1],
+            }
+        )
 
     return {
         "vlg": [vmin, vmax],
@@ -588,16 +624,22 @@ def cmd_index(args: argparse.Namespace) -> int:
         )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps({"root": str(root), "records": records}, indent=2), encoding="utf-8")
+    out_path.write_text(
+        json.dumps({"root": str(root), "records": records}, indent=2), encoding="utf-8"
+    )
     print(f"Wrote index: {out_path} ({len(records)} files)")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="trix", description="TRIX geometry-first helper tools")
+    p = argparse.ArgumentParser(
+        prog="trix", description="TRIX geometry-first helper tools"
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    g = sub.add_parser("gutter", help="print a file with L/C gutters for pinpoint references")
+    g = sub.add_parser(
+        "gutter", help="print a file with L/C gutters for pinpoint references"
+    )
     g.add_argument("path")
     g.set_defaults(func=cmd_gutter)
 
@@ -611,20 +653,33 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("path")
     pr.set_defaults(func=cmd_parse)
 
-    sc = sub.add_parser("scan", help="scan a file (junction canvas) for embedded 3×3 blocks")
+    sc = sub.add_parser(
+        "scan", help="scan a file (junction canvas) for embedded 3×3 blocks"
+    )
     sc.add_argument("path")
     sc.set_defaults(func=cmd_scan)
 
-    rs = sub.add_parser("resolve", help="resolve a coordinate to matrix+slot (TRIX address)")
+    rs = sub.add_parser(
+        "resolve", help="resolve a coordinate to matrix+slot (TRIX address)"
+    )
     rs.add_argument("path")
     rs.add_argument("--lc", help="Coordinate like L0042:C0137")
     rs.add_argument("--line", type=int, help="0-based line index")
     rs.add_argument("--col", type=int, help="0-based column index")
-    rs.add_argument("--vlg", type=int, help="Vertical line gutter index (native junction style, 2-digit rows)")
-    rs.add_argument("--hlg", type=int, help="Horizontal line gutter index (native junction style)")
+    rs.add_argument(
+        "--vlg",
+        type=int,
+        help="Vertical line gutter index (native junction style, 2-digit rows)",
+    )
+    rs.add_argument(
+        "--hlg", type=int, help="Horizontal line gutter index (native junction style)"
+    )
     rs.set_defaults(func=cmd_resolve)
 
-    ex = sub.add_parser("extract", help="extract a (vlg/hlg) rectangular region from a native-gutter junction")
+    ex = sub.add_parser(
+        "extract",
+        help="extract a (vlg/hlg) rectangular region from a native-gutter junction",
+    )
     ex.add_argument("path")
     ex.add_argument("--vlg0", type=int, required=True)
     ex.add_argument("--vlg1", type=int, required=True)
@@ -632,7 +687,9 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--hlg1", type=int, required=True)
     ex.set_defaults(func=cmd_extract)
 
-    ix = sub.add_parser("index", help="scan a repo tree for embedded blocks and write a JSON index")
+    ix = sub.add_parser(
+        "index", help="scan a repo tree for embedded blocks and write a JSON index"
+    )
     ix.add_argument("root")
     ix.add_argument("--out", default=".trix/index.json")
     ix.set_defaults(func=cmd_index)
