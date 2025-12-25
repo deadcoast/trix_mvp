@@ -105,10 +105,10 @@ def parse_trix(path: str | Path) -> TrixMatrix:
             skin_hint = line.split(":", 1)[1].strip()
             break
 
-    rows = _extract_cell_rows(lines, titl)
-    if not rows:
+    if rows := _extract_cell_rows(lines, titl):
+        return TrixMatrix(titl=titl, raw_cells=rows, skin_hint=skin_hint, path=p)
+    else:
         raise ValueError(f"Could not find any 3-token cell rows in {p}")
-    return TrixMatrix(titl=titl, raw_cells=rows, skin_hint=skin_hint, path=p)
 
 
 def validate_block_3x3(m: TrixMatrix) -> List[str]:
@@ -117,7 +117,9 @@ def validate_block_3x3(m: TrixMatrix) -> List[str]:
     if len(m.raw_cells) != 3:
         errs.append(f"{m.path}: expected 3 cell rows, got {len(m.raw_cells)}")
     else:
-        for i, row in enumerate(m.raw_cells):
-            if len(row) != 3:
-                errs.append(f"{m.path}: row {i} expected 3 cells, got {len(row)}")
+        errs.extend(
+            f"{m.path}: row {i} expected 3 cells, got {len(row)}"
+            for i, row in enumerate(m.raw_cells)
+            if len(row) != 3
+        )
     return errs

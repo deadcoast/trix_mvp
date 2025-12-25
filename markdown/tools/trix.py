@@ -78,33 +78,35 @@ def extract_matrix_row_lines(body: str) -> List[str]:
 
     MVP rule: any line that starts with '|' is treated as a matrix row.
     """
-    rows = []
-    for line in body.splitlines():
-        if line.strip().startswith("|"):
-            rows.append(line.strip())
-    return rows
+    return [
+        line.strip()
+        for line in body.splitlines()
+        if line.strip().startswith("|")
+    ]
 
 
 def parse_block_row(row: str) -> List[MatrixCell]:
     # Matches [1](path) ... for 3 cells in a row
     pattern = re.compile(r"\[(\d)\]\(([^)]+)\)")
-    cells = [MatrixCell(label=m.group(1), target=m.group(2)) for m in pattern.finditer(row)]
-    return cells
+    return [
+        MatrixCell(label=m.group(1), target=m.group(2))
+        for m in pattern.finditer(row)
+    ]
 
 
 def parse_9ode_row(row: str) -> List[MatrixCell]:
     # Matches [DOCS](path) ... for 3 cells in a row
     pattern = re.compile(r"\[([A-Za-z0-9]{4})\]\(([^)]+)\)")
-    cells = [MatrixCell(label=m.group(1), target=m.group(2)) for m in pattern.finditer(row)]
-    return cells
+    return [
+        MatrixCell(label=m.group(1), target=m.group(2))
+        for m in pattern.finditer(row)
+    ]
 
 
 def resolve_target(matrix_path: Path, target: str) -> Path:
     # Allow absolute or relative paths; MVP treats as file paths.
     p = Path(target)
-    if p.is_absolute():
-        return p
-    return (matrix_path.parent / p).resolve()
+    return p if p.is_absolute() else (matrix_path.parent / p).resolve()
 
 
 def validate_matrix_file(path: Path) -> List[str]:
@@ -180,8 +182,8 @@ def build_index(root: Path) -> Dict[str, Any]:
         _, body = split_front_matter(mpath.read_text(encoding="utf-8"))
         rows = extract_matrix_row_lines(body)
 
+        cells: List[MatrixCell] = []
         if kind == "block":
-            cells: List[MatrixCell] = []
             for r in rows:
                 cells.extend(parse_block_row(r))
             idx["blocks"][title] = {
@@ -204,8 +206,6 @@ def build_index(root: Path) -> Dict[str, Any]:
                     "links": nfm.get("links") or [],
                 }
         else:
-            # 9ode/super: cells refer to other matrices
-            cells: List[MatrixCell] = []
             for r in rows:
                 cells.extend(parse_9ode_row(r))
             idx["blocks"][title] = {
@@ -243,11 +243,9 @@ def cmd_index(args: argparse.Namespace) -> None:
 
 def find_next_task_markdown(path: Path) -> Optional[str]:
     text = path.read_text(encoding="utf-8")
-    # Simple checkbox scan
-    for line in text.splitlines():
-        if "- [ ]" in line:
-            return line.strip()
-    return None
+    return next(
+        (line.strip() for line in text.splitlines() if "- [ ]" in line), None
+    )
 
 
 def cmd_next(args: argparse.Namespace) -> None:
@@ -259,18 +257,16 @@ def cmd_next(args: argparse.Namespace) -> None:
         idx = build_index(repo)
 
     task_block = "TASK"
-    # Prefer backlog (slot 4) then now (slot 5)
-    candidates = []
-    for nid, n in idx.get("nodes", {}).items():
-        if n.get("block") == task_block and n.get("type") == "task":
-            candidates.append((n.get("slot"), nid, n))
-
+    candidates = [
+        (n.get("slot"), nid, n)
+        for nid, n in idx.get("nodes", {}).items()
+        if n.get("block") == task_block and n.get("type") == "task"
+    ]
     candidates.sort(key=lambda t: (t[0], t[1]))
     for slot, nid, n in candidates:
         if slot not in (4, 5):
             continue
-        task_line = find_next_task_markdown(repo / n["path"])
-        if task_line:
+        if task_line := find_next_task_markdown(repo / n["path"]):
             print(f"Next task candidate ({nid}): {task_line}")
             return
 

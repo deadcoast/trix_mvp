@@ -27,8 +27,7 @@ def cmd_parse(args: argparse.Namespace) -> int:
 
 def cmd_validate(args: argparse.Namespace) -> int:
     m = parse_trix(args.file)
-    errs = validate_block_3x3(m)
-    if errs:
+    if errs := validate_block_3x3(m):
         print("\n".join(errs))
         return 2
     print(f"OK: {m.titl} ({args.file})")
@@ -47,11 +46,14 @@ def cmd_index(args: argparse.Namespace) -> int:
 
 def cmd_zoom(args: argparse.Namespace) -> int:
     rec = build_matrix_record(Path(args.file))
-    cell = None
-    for c in rec.cells:
-        if c.slot == args.cell or str(c.token) == str(args.cell):
-            cell = c
-            break
+    cell = next(
+        (
+            c
+            for c in rec.cells
+            if c.slot == args.cell or str(c.token) == str(args.cell)
+        ),
+        None,
+    )
     if not cell:
         print(f"No such cell: {args.cell}")
         return 2
@@ -70,11 +72,14 @@ def cmd_zoom(args: argparse.Namespace) -> int:
 
 def cmd_context(args: argparse.Namespace) -> int:
     rec = build_matrix_record(Path(args.file))
-    cell = None
-    for c in rec.cells:
-        if c.slot == args.cell or str(c.token) == str(args.cell):
-            cell = c
-            break
+    cell = next(
+        (
+            c
+            for c in rec.cells
+            if c.slot == args.cell or str(c.token) == str(args.cell)
+        ),
+        None,
+    )
     if not cell:
         print(f"No such cell: {args.cell}")
         return 2

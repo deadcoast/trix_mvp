@@ -42,16 +42,19 @@ def load_map_for_matrix(matrix_path: Path) -> Optional[Dict[str, Any]]:
         matrix_path.parent.parent / "maps" / f"{titl}.map.yaml",
         matrix_path.parent.parent / "maps" / f"{titl}.map.yml",
     ]
-    for c in candidates:
-        if c.exists():
-            return yaml.safe_load(c.read_text(encoding="utf-8"))
-    return None
+    return next(
+        (
+            yaml.safe_load(c.read_text(encoding="utf-8"))
+            for c in candidates
+            if c.exists()
+        ),
+        None,
+    )
 
 
 def build_matrix_record(matrix_path: Path) -> MatrixRecord:
     m = parse_trix(matrix_path)
-    errs = validate_block_3x3(m)
-    if errs:
+    if errs := validate_block_3x3(m):
         raise ValueError("\n".join(errs))
 
     mapping = load_map_for_matrix(matrix_path) or {}
