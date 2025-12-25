@@ -63,3 +63,10 @@ cells:
 - `python tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .`
 - `python tools/trix.py index examples --out examples/.index.json`
 
+## Where to extend next
+- True 9ode/super parsing (3x3 of child matrices).
+- Cluster (9x9) derived views.
+- Merge/plug operators (mount block into a cell).
+- Transforms as first-class nodes (task->code, code->docs).
+- Facets as first-class nodes (task->steer, task->config).
+- CLI for zooming, context, and next task.
