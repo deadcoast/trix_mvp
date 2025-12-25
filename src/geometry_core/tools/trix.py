@@ -87,9 +87,7 @@ def detect_titl_near(lines: List[str], line_idx: int, anchor_col: int) -> Option
         return best.group(1)
 
     # fallback: same line
-    matches = (
-        list(TITL_RE.finditer(lines[line_idx])) if 0 <= line_idx < len(lines) else []
-    )
+    matches = list(TITL_RE.finditer(lines[line_idx])) if 0 <= line_idx < len(lines) else []
     if matches:
         best = min(matches, key=lambda m: abs(m.start() - anchor_col))
         return best.group(1)
@@ -126,10 +124,7 @@ def parse_first_block(text: str) -> ParsedBlock:
     candidate: List[Tuple[int, List[Tuple[int, int, int]]]] = []
     for i, line in enumerate(lines):
         # capture (token, col0, col1)
-        toks = [
-            (int(m.group(1).strip()), m.start(), m.end() - 1)
-            for m in CELL_RE.finditer(line)
-        ]
+        toks = [(int(m.group(1).strip()), m.start(), m.end() - 1) for m in CELL_RE.finditer(line)]
         if len(toks) == 3:
             candidate.append((i, toks))
 
@@ -151,20 +146,14 @@ def parse_first_block(text: str) -> ParsedBlock:
 
             cells: List[CellBox] = []
             slot = 1
-            for r_idx, (li, row) in enumerate(zip(row_lines, [t0, t1, t2])):
-                for c_idx, (tok, c0, c1) in enumerate(row):
-                    cells.append(
-                        CellBox(slot=slot, token=tok, line=li, col0=c0, col1=c1)
-                    )
+            for li, row in zip(row_lines, [t0, t1, t2]):
+                for tok, c0, c1 in row:
+                    cells.append(CellBox(slot=slot, token=tok, line=li, col0=c0, col1=c1))
                     slot += 1
 
-            return ParsedBlock(
-                titl=titl, rows=rows, row_lines=row_lines, cells=cells, skin=skin
-            )
+            return ParsedBlock(titl=titl, rows=rows, row_lines=row_lines, cells=cells, skin=skin)
 
-    raise ValueError(
-        "No 3x3 block found: expected 3 consecutive lines with 3 cells each."
-    )
+    raise ValueError("No 3x3 block found: expected 3 consecutive lines with 3 cells each.")
 
 
 @dataclass
@@ -203,10 +192,7 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
     row_cands_by_line: Dict[int, List[RowCand]] = {}
 
     for li, line in enumerate(lines):
-        toks = [
-            (int(m.group(1).strip()), m.start(), m.end() - 1)
-            for m in CELL_RE.finditer(line)
-        ]
+        toks = [(int(m.group(1).strip()), m.start(), m.end() - 1) for m in CELL_RE.finditer(line)]
         if len(toks) < 3:
             continue
 
@@ -265,9 +251,7 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
             slot = 1
             for li, row in zip(row_lines, [c0.toks, c1.toks, c2.toks]):
                 for tok, c0x, c1x in row:
-                    cells.append(
-                        CellBox(slot=slot, token=tok, line=li, col0=c0x, col1=c1x)
-                    )
+                    cells.append(CellBox(slot=slot, token=tok, line=li, col0=c0x, col1=c1x))
                     slot += 1
 
             blocks.append(
@@ -296,6 +280,7 @@ def scan_junction(text: str) -> List[EmbeddedMatrix]:
     blocks = scan_blocks(text)
 
     embedded: List[EmbeddedMatrix] = []
+    pad = 6
     for b in blocks:
         anchor_line = b.row_lines[0]
         anchor_col = min((c.col0 for c in b.cells), default=0)
@@ -308,13 +293,10 @@ def scan_junction(text: str) -> List[EmbeddedMatrix]:
         min_c = min((c.col0 for c in b.cells), default=0)
         max_c = max((c.col1 for c in b.cells), default=0)
 
-        pad = 6
         bb_c0 = max(0, min_c - pad)
         bb_c1 = max_c + pad
 
-        # Clip to local line widths
-        max_width = max((len(lines[i]) for i in range(bb_l0, bb_l1 + 1)), default=0)
-        if max_width:
+        if max_width := max((len(lines[i]) for i in range(bb_l0, bb_l1 + 1)), default=0):
             bb_c1 = min(bb_c1, max_width - 1)
 
         embedded.append(
@@ -338,21 +320,17 @@ def gutter_overlay(text: str, start_line: int = 0) -> str:
     tens = "".join(str((i // 10) % 10) if i % 10 == 0 else " " for i in range(maxlen))
     hund = "".join(str((i // 100) % 10) if i % 100 == 0 else " " for i in range(maxlen))
 
-    out = []
-    out.append(f"     C:{hund}")
-    out.append(f"     C:{tens}")
-    out.append(f"     C:{ones}")
-    for idx, line in enumerate(lines):
-        out.append(f"L{start_line+idx:04d} {line}")
+    out = [f"     C:{hund}", f"     C:{tens}", f"     C:{ones}"]
+    out.extend(f"L{start_line + idx:04d} {line}" for idx, line in enumerate(lines))
     return "\n".join(out) + "\n"
 
 
 def _parse_lc(arg: str) -> Tuple[int, int]:
     """Parse 'L####:C####' (or 'L42:C137') into (line, col)."""
-    m = re.match(r"L(\d+):C(\d+)", arg.strip(), flags=re.I)
-    if not m:
+    if m := re.match(r"L(\d+):C(\d+)", arg.strip(), flags=re.I):
+        return int(m[1]), int(m[2])
+    else:
         raise ValueError("Expected format L####:C####")
-    return int(m.group(1)), int(m.group(2))
 
 
 def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, int]:
@@ -376,28 +354,21 @@ def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, 
         m = re.match(r"\|(\d{2})\|", l)
         if not m:
             continue
-        if int(m.group(1)) == int(vlg):
+        if int(m[1]) == vlg:
             row_line = i
             break
     if row_line is None:
         raise ValueError(f"Could not find vlg row {vlg:02d} in file")
 
-    # Find horizontal label line
-    hlabel_idx = None
-    for i, l in enumerate(lines):
-        if re.match(r"\|01\|02\|", l):
-            hlabel_idx = i
-            break
+    hlabel_idx = next((i for i, l in enumerate(lines) if re.match(r"\|01\|02\|", l)), None)
     if hlabel_idx is None:
-        raise ValueError(
-            "Could not find horizontal gutter line starting with '|01|02|'"
-        )
+        raise ValueError("Could not find horizontal gutter line starting with '|01|02|'")
 
     hlabel = lines[hlabel_idx]
     bars = [m.start() for m in re.finditer(r"\|", hlabel)]
     # We expect 1..N coords, each coord cell is between bars[k-1]..bars[k]
     if hlg < 1 or hlg >= len(bars):
-        raise ValueError(f"hlg must be 1..{len(bars)-1}, got {hlg}")
+        raise ValueError(f"hlg must be 1..{len(bars) - 1}, got {hlg}")
 
     x0 = bars[hlg - 1] + 1
     x1 = bars[hlg] - 1
@@ -446,30 +417,21 @@ def resolve_coordinate(text: str, line: int, col: int) -> Dict[str, object]:
     }
 
 
-def extract_region_vlg_hlg(
-    text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
-) -> Dict[str, object]:
+def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int) -> Dict[str, object]:
     """Extract a rectangular region from a native-gutter junction canvas (vlg/hlg).
 
     Returns the raw text slice for each vlg row included.
     """
     lines = normalize_lines(text)
 
-    # Find horizontal label line and compute bar boundaries
-    hlabel_idx = None
-    for i, l in enumerate(lines):
-        if re.match(r"\|01\|02\|", l):
-            hlabel_idx = i
-            break
+    hlabel_idx = next((i for i, l in enumerate(lines) if re.match(r"\|01\|02\|", l)), None)
     if hlabel_idx is None:
-        raise ValueError(
-            "Could not find horizontal gutter line starting with '|01|02|'"
-        )
+        raise ValueError("Could not find horizontal gutter line starting with '|01|02|'")
 
     hlabel = lines[hlabel_idx]
     bars = [m.start() for m in re.finditer(r"\|", hlabel)]
     if hlg0 < 1 or hlg1 < 1 or hlg0 >= len(bars) or hlg1 >= len(bars):
-        raise ValueError(f"hlg must be 1..{len(bars)-1}")
+        raise ValueError(f"hlg must be 1..{len(bars) - 1}")
 
     hmin, hmax = min(hlg0, hlg1), max(hlg0, hlg1)
     x0 = bars[hmin - 1] + 1
@@ -478,13 +440,11 @@ def extract_region_vlg_hlg(
     # Map vlg rows to line indices
     v_to_line: Dict[int, int] = {}
     for i, l in enumerate(lines):
-        m = re.match(r"\|(\d{2})\|", l)
-        if m:
-            v_to_line[int(m.group(1))] = i
+        if m := re.match(r"\|(\d{2})\|", l):
+            v_to_line[int(m[1])] = i
 
     vmin, vmax = min(vlg0, vlg1), max(vlg0, vlg1)
-    missing = [v for v in range(vmin, vmax + 1) if v not in v_to_line]
-    if missing:
+    if missing := [v for v in range(vmin, vmax + 1) if v not in v_to_line]:
         raise ValueError(f"Missing vlg rows: {missing}")
 
     rows = []
@@ -624,22 +584,16 @@ def cmd_index(args: argparse.Namespace) -> int:
         )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(
-        json.dumps({"root": str(root), "records": records}, indent=2), encoding="utf-8"
-    )
+    out_path.write_text(json.dumps({"root": str(root), "records": records}, indent=2), encoding="utf-8")
     print(f"Wrote index: {out_path} ({len(records)} files)")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
-        prog="trix", description="TRIX geometry-first helper tools"
-    )
+    p = argparse.ArgumentParser(prog="trix", description="TRIX geometry-first helper tools")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    g = sub.add_parser(
-        "gutter", help="print a file with L/C gutters for pinpoint references"
-    )
+    g = sub.add_parser("gutter", help="print a file with L/C gutters for pinpoint references")
     g.add_argument("path")
     g.set_defaults(func=cmd_gutter)
 
@@ -653,15 +607,11 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("path")
     pr.set_defaults(func=cmd_parse)
 
-    sc = sub.add_parser(
-        "scan", help="scan a file (junction canvas) for embedded 3×3 blocks"
-    )
+    sc = sub.add_parser("scan", help="scan a file (junction canvas) for embedded 3×3 blocks")
     sc.add_argument("path")
     sc.set_defaults(func=cmd_scan)
 
-    rs = sub.add_parser(
-        "resolve", help="resolve a coordinate to matrix+slot (TRIX address)"
-    )
+    rs = sub.add_parser("resolve", help="resolve a coordinate to matrix+slot (TRIX address)")
     rs.add_argument("path")
     rs.add_argument("--lc", help="Coordinate like L0042:C0137")
     rs.add_argument("--line", type=int, help="0-based line index")
@@ -671,9 +621,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         help="Vertical line gutter index (native junction style, 2-digit rows)",
     )
-    rs.add_argument(
-        "--hlg", type=int, help="Horizontal line gutter index (native junction style)"
-    )
+    rs.add_argument("--hlg", type=int, help="Horizontal line gutter index (native junction style)")
     rs.set_defaults(func=cmd_resolve)
 
     ex = sub.add_parser(
@@ -687,9 +635,7 @@ def build_parser() -> argparse.ArgumentParser:
     ex.add_argument("--hlg1", type=int, required=True)
     ex.set_defaults(func=cmd_extract)
 
-    ix = sub.add_parser(
-        "index", help="scan a repo tree for embedded blocks and write a JSON index"
-    )
+    ix = sub.add_parser("index", help="scan a repo tree for embedded blocks and write a JSON index")
     ix.add_argument("root")
     ix.add_argument("--out", default=".trix/index.json")
     ix.set_defaults(func=cmd_index)

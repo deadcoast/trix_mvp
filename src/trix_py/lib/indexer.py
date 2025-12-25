@@ -43,11 +43,7 @@ def load_map_for_matrix(matrix_path: Path) -> Optional[Dict[str, Any]]:
         matrix_path.parent.parent / "maps" / f"{titl}.map.yml",
     ]
     return next(
-        (
-            yaml.safe_load(c.read_text(encoding="utf-8"))
-            for c in candidates
-            if c.exists()
-        ),
+        (yaml.safe_load(c.read_text(encoding="utf-8")) for c in candidates if c.exists()),
         None,
     )
 
@@ -84,9 +80,7 @@ def build_matrix_record(matrix_path: Path) -> MatrixRecord:
             )
         )
 
-    return MatrixRecord(
-        titl=m.titl, path=str(matrix_path), skin_hint=m.skin_hint, cells=cells
-    )
+    return MatrixRecord(titl=m.titl, path=str(matrix_path), skin_hint=m.skin_hint, cells=cells)
 
 
 def index_repo(root: Path) -> Dict[str, Any]:

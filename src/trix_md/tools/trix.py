@@ -84,17 +84,13 @@ def extract_matrix_row_lines(body: str) -> List[str]:
 def parse_block_row(row: str) -> List[MatrixCell]:
     # Matches [1](path) ... for 3 cells in a row
     pattern = re.compile(r"\[(\d)\]\(([^)]+)\)")
-    return [
-        MatrixCell(label=m.group(1), target=m.group(2)) for m in pattern.finditer(row)
-    ]
+    return [MatrixCell(label=m.group(1), target=m.group(2)) for m in pattern.finditer(row)]
 
 
 def parse_9ode_row(row: str) -> List[MatrixCell]:
     # Matches [DOCS](path) ... for 3 cells in a row
     pattern = re.compile(r"\[([A-Za-z0-9]{4})\]\(([^)]+)\)")
-    return [
-        MatrixCell(label=m.group(1), target=m.group(2)) for m in pattern.finditer(row)
-    ]
+    return [MatrixCell(label=m.group(1), target=m.group(2)) for m in pattern.finditer(row)]
 
 
 def resolve_target(matrix_path: Path, target: str) -> Path:
@@ -123,9 +119,7 @@ def validate_matrix_file(path: Path) -> List[str]:
 
     # basic '==[TITL]' presence (not strict)
     if f"==[{title}]" not in text:
-        warnings.append(
-            f"{path}: matrix header does not include '==[{title}]' (not fatal)"
-        )
+        warnings.append(f"{path}: matrix header does not include '==[{title}]' (not fatal)")
 
     rows = extract_matrix_row_lines(body)
     if len(rows) != 3:
@@ -139,9 +133,7 @@ def validate_matrix_file(path: Path) -> List[str]:
         for cell in cells:
             target_path = resolve_target(path, cell.target)
             if not target_path.exists():
-                die(
-                    f"{path}: missing target for cell [{cell.label}] -> {cell.target} (resolved {target_path})"
-                )
+                die(f"{path}: missing target for cell [{cell.label}] -> {cell.target} (resolved {target_path})")
 
     # block-specific checks
     if kind == "block":

@@ -97,9 +97,7 @@ def cmd_context(args: argparse.Namespace) -> int:
         "facets": {},
     }
 
-    facets = (
-        (cell.payload.get("facets") or {}) if isinstance(cell.payload, dict) else {}
-    )
+    facets = (cell.payload.get("facets") or {}) if isinstance(cell.payload, dict) else {}
     for facet_name, rel_path in facets.items():
         p = (Path(args.repo) / rel_path).resolve()
         if p.exists():
@@ -118,9 +116,7 @@ def cmd_context(args: argparse.Namespace) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        prog="trix", description="TRIX geometry-first parser/indexer"
-    )
+    ap = argparse.ArgumentParser(prog="trix", description="TRIX geometry-first parser/indexer")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("parse", help="Parse a .trix file into a canonical AST (JSON).")
@@ -146,9 +142,7 @@ def main() -> int:
     )
     z.set_defaults(fn=cmd_zoom)
 
-    c = sub.add_parser(
-        "context", help="Build an agent context bundle for a cell (includes facets)."
-    )
+    c = sub.add_parser("context", help="Build an agent context bundle for a cell (includes facets).")
     c.add_argument("file")
     c.add_argument("--cell", type=int, required=True)
     c.add_argument("--repo", default=".", help="Repo root for resolving facet paths.")

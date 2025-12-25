@@ -118,8 +118,6 @@ def validate_block_3x3(m: TrixMatrix) -> List[str]:
         errs.append(f"{m.path}: expected 3 cell rows, got {len(m.raw_cells)}")
     else:
         errs.extend(
-            f"{m.path}: row {i} expected 3 cells, got {len(row)}"
-            for i, row in enumerate(m.raw_cells)
-            if len(row) != 3
+            f"{m.path}: row {i} expected 3 cells, got {len(row)}" for i, row in enumerate(m.raw_cells) if len(row) != 3
         )
     return errs
