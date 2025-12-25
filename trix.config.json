@@ -1,0 +1,21 @@
+{
+  "trix_version": "0.1",
+  "canonical_matrix_style": "boring-bill",
+  "enforce_title_len": 4,
+  "hub": {
+    "title": "HUB0",
+    "path": "trix/hub/HUB0.md"
+  },
+  "blocks": [
+    "DOCS",
+    "CODE",
+    "TASK",
+    "AGNT",
+    "ARCH",
+    "TEST",
+    "DEPL",
+    "OPER",
+    "META"
+  ],
+  "task_block": "TASK"
+}
