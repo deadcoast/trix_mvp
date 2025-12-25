@@ -1,0 +1,13 @@
+titl: DOCS
+kind: block
+cells:
+  '1':
+    kind: node
+    node_id: DOCS-1
+    facets:
+      doc: examples/nodes/DOCS-1.doc.md
+  '2':
+    kind: node
+    node_id: DOCS-2
+    facets:
+      doc: examples/nodes/DOCS-2.doc.md

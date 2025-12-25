@@ -1,0 +1,9 @@
+titl: TASK
+kind: block
+cells:
+  '5':
+    kind: node
+    node_id: TASK-5
+    facets:
+      task: examples/nodes/TASK-5.task.md
+      steer: examples/nodes/TASK-5.steer.md

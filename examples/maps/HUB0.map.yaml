@@ -1,0 +1,11 @@
+titl: HUB0
+kind: 9ode
+cells:
+  '1':
+    kind: block
+    ref: DOCS
+    path: examples/blocks/DOCS.trix
+  '2':
+    kind: block
+    ref: TASK
+    path: examples/blocks/TASK.trix
