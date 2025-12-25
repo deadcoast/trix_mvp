@@ -9,3 +9,5 @@ build/
 # Logs
 logs/
 *.log
+
+.early.coverage
