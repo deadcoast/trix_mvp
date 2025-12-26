@@ -29,6 +29,11 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+try:
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover
+    yaml = None
+
 CELL_RE = re.compile(r"\[(\s*[1-9]\s*)\]")
 TITL_RE = re.compile(r"\[([A-Za-z0-9]{4})\]")  # strict 4-char title token
 
@@ -467,6 +472,298 @@ def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
     }
 
 
+def _safe_load_yaml(path: Path) -> Dict[str, object]:
+    if yaml is None:
+        raise RuntimeError("PyYAML is not available; cannot load .map.yaml")
+    data = yaml.safe_load(path.read_text(encoding="utf-8", errors="replace")) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"{path}: expected YAML mapping at root")
+    return data
+
+
+def _find_map_for_titl(repo_root: Path, titl: str) -> Optional[Path]:
+    candidates = list(repo_root.rglob(f"{titl}.map.yaml")) + list(repo_root.rglob(f"{titl}.map.yml"))
+    if not candidates:
+        return None
+
+    def score(p: Path) -> Tuple[int, int]:
+        parts = [s.lower() for s in p.parts]
+        return (0 if "maps" in parts else 1, len(p.parts))
+
+    return sorted(set(candidates), key=score)[0]
+
+
+def _resolve_cell_binding(map_doc: Dict[str, object], slot: int, token: Optional[int]) -> Optional[Dict[str, object]]:
+    cells = map_doc.get("cells")
+    if not isinstance(cells, dict):
+        return None
+
+    keys = [str(slot)]
+    if token is not None:
+        keys.insert(0, str(token))
+    for key in keys:
+        val = cells.get(key)
+        if isinstance(val, dict):
+            return val
+    return None
+
+
+def _read_facet_payload(
+    repo_root: Path,
+    map_path: Path,
+    facet_path: str,
+    *,
+    full: bool,
+    max_chars: int,
+) -> Dict[str, object]:
+    p = Path(facet_path)
+    candidates = [repo_root / p, map_path.parent / p]
+    for cand in candidates:
+        if cand.exists() and cand.is_file():
+            txt = cand.read_text(encoding="utf-8", errors="replace")
+            try:
+                rel = cand.relative_to(repo_root)
+                path_str = str(rel)
+            except ValueError:
+                path_str = str(cand)
+            payload = {
+                "path": path_str,
+            }
+            if full:
+                payload["content"] = txt
+            else:
+                payload["excerpt"] = txt[:max_chars]
+                if len(txt) > max_chars:
+                    payload["truncated"] = True
+            return payload
+    return {"path": facet_path, "missing": True}
+
+
+def resolve_pin_to_binding(
+    repo_root: Path,
+    *,
+    titl: str,
+    slot: int,
+    token: Optional[int],
+    full: bool = False,
+    max_chars: int = 1400,
+    facet_filter: Optional[List[str]] = None,
+) -> Dict[str, object]:
+    out: Dict[str, object] = {
+        "titl": titl,
+        "slot": slot,
+        "token": token,
+        "map": None,
+        "binding": None,
+    }
+
+    map_path = _find_map_for_titl(repo_root, titl)
+    if not map_path:
+        out["map"] = {"found": False}
+        return out
+
+    try:
+        map_rel = str(map_path.relative_to(repo_root))
+    except ValueError:
+        map_rel = str(map_path)
+    out["map"] = {"found": True, "path": map_rel}
+    map_doc = _safe_load_yaml(map_path)
+    binding = _resolve_cell_binding(map_doc, slot=slot, token=token)
+    if not binding:
+        return out
+
+    out["binding"] = binding
+
+    facets = binding.get("facets")
+    if isinstance(facets, dict):
+        facet_payloads: Dict[str, object] = {}
+        for k, v in facets.items():
+            if facet_filter and str(k) not in facet_filter:
+                continue
+            if isinstance(v, str):
+                facet_payloads[str(k)] = _read_facet_payload(
+                    repo_root,
+                    map_path,
+                    v,
+                    full=full,
+                    max_chars=max_chars,
+                )
+        out["facets"] = facet_payloads
+    return out
+
+
+def _resolve_pin_location(
+    *,
+    lines: List[str],
+    lc: Optional[str],
+    line: Optional[int],
+    col: Optional[int],
+    vlg: Optional[int],
+    hlg: Optional[int],
+) -> Tuple[int, int, Dict[str, object]]:
+    if lc:
+        l, c = _parse_lc(lc)
+        return l, c, {"lc": lc, "line": l, "col": c}
+    if line is not None and col is not None:
+        return int(line), int(col), {"line": int(line), "col": int(col)}
+    if vlg is not None and hlg is not None:
+        l, c = _guttered_vlg_hlg_to_lc(lines, int(vlg), int(hlg))
+        return l, c, {"vlg": int(vlg), "hlg": int(hlg), "line": l, "col": c}
+    raise SystemExit("pin/content requires either --lc, --line/--col, or --vlg/--hlg")
+
+
+def _parse_range(part: str) -> Tuple[int, int]:
+    part = part.strip()
+    if "->" in part:
+        a, b = part.split("->", 1)
+        return int(a), int(b)
+    return int(part), int(part)
+
+
+def _parse_coord_token(token: str) -> List[Tuple[int, int, int, int]]:
+    token = token.strip()
+    if not token or "/" not in token:
+        return []
+    vlg_part, hlg_part = token.split("/", 1)
+    h0, h1 = _parse_range(hlg_part)
+    v_ranges = [p.strip() for p in vlg_part.split("&")]
+    coords = []
+    for vr in v_ranges:
+        if not vr:
+            continue
+        v0, v1 = _parse_range(vr)
+        coords.append((v0, v1, h0, h1))
+    return coords
+
+
+def _parse_operator_summary(text: str) -> Tuple[List[Dict[str, object]], List[str]]:
+    lines = text.splitlines()
+    start_idx = None
+    for i, line in enumerate(lines):
+        if line.strip().lower().startswith("| rule | operator |"):
+            start_idx = i + 2  # skip header + separator
+            break
+    if start_idx is None:
+        return [], ["Operator Summary table not found"]
+
+    expected: List[Dict[str, object]] = []
+    skipped: List[str] = []
+    for line in lines[start_idx:]:
+        if not line.strip().startswith("|"):
+            break
+        parts = [p.strip() for p in line.strip().split("|")[1:-1]]
+        if len(parts) < 4:
+            continue
+        rule, operator, _meaning, coord_text = parts[:4]
+        op = operator.strip("` ").strip()
+        if not coord_text:
+            continue
+        tokens = [t.strip() for t in coord_text.split(",") if t.strip()]
+        for token in tokens:
+            coords = _parse_coord_token(token)
+            if not coords:
+                skipped.append(f"{rule}:{op}:{token}")
+                continue
+            for v0, v1, h0, h1 in coords:
+                expected.append(
+                    {
+                        "rule": rule,
+                        "operator": op,
+                        "vlg0": v0,
+                        "vlg1": v1,
+                        "hlg0": h0,
+                        "hlg1": h1,
+                    }
+                )
+    return expected, skipped
+
+
+def _load_expectations(spec_path: Path) -> List[Dict[str, object]]:
+    if spec_path.suffix.lower() in {".json"}:
+        data = json.loads(spec_path.read_text(encoding="utf-8", errors="replace"))
+    else:
+        data = _safe_load_yaml(spec_path)
+
+    ops = data.get("operators") if isinstance(data, dict) else data
+    if not isinstance(ops, list):
+        raise ValueError("spec must be a list or include an 'operators' list")
+
+    expected: List[Dict[str, object]] = []
+    for entry in ops:
+        if not isinstance(entry, dict):
+            continue
+        op = str(entry.get("operator", "")).strip()
+        rule = str(entry.get("rule", "")).strip() or None
+        coords = entry.get("coords") or []
+        if not isinstance(coords, list):
+            continue
+        for coord in coords:
+            if not isinstance(coord, dict):
+                continue
+            v = coord.get("vlg")
+            h = coord.get("hlg")
+            if v is None or h is None:
+                continue
+            v0, v1 = _parse_range(str(v)) if isinstance(v, str) else (int(v), int(v))
+            if isinstance(h, list) and len(h) == 2:
+                h0, h1 = int(h[0]), int(h[1])
+            else:
+                h0, h1 = _parse_range(str(h)) if isinstance(h, str) else (int(h), int(h))
+            expected.append(
+                {
+                    "rule": rule,
+                    "operator": op,
+                    "vlg0": v0,
+                    "vlg1": v1,
+                    "hlg0": h0,
+                    "hlg1": h1,
+                }
+            )
+    return expected
+
+
+def _operator_pattern(operator: str) -> re.Pattern[str]:
+    op = operator.strip("` ").strip()
+    patterns = {
+        "(+)": r"\(\+\)",
+        "[-]": r"\[-\]",
+        "-|-": r"\|\-\|\-\|",
+        "~": r"~\|~",
+        "+": r"\| \+ \|",
+        "-": r"\| - \|",
+        "[| |]": r"\[\| \|\]",
+        "[//]": r"\[//\]",
+        "%": r"%",
+    }
+    return re.compile(patterns.get(op, re.escape(op)))
+
+
+def _validate_expectations(text: str, expected: List[Dict[str, object]]) -> Dict[str, object]:
+    errors: List[Dict[str, object]] = []
+    checked = 0
+    for entry in expected:
+        operator = str(entry.get("operator", "")).strip()
+        vlg0 = int(entry["vlg0"])
+        vlg1 = int(entry["vlg1"])
+        hlg0 = int(entry["hlg0"])
+        hlg1 = int(entry["hlg1"])
+        region = extract_region_vlg_hlg(text, vlg0, vlg1, hlg0, hlg1)
+        region_text = "\n".join(r["slice"] for r in region["rows"])
+        pattern = _operator_pattern(operator)
+        checked += 1
+        if not pattern.search(region_text):
+            errors.append(
+                {
+                    "operator": operator,
+                    "rule": entry.get("rule"),
+                    "vlg": [vlg0, vlg1],
+                    "hlg": [hlg0, hlg1],
+                    "region": region_text,
+                }
+            )
+    return {"checked": checked, "errors": errors}
+
+
 def cmd_gutter(args: argparse.Namespace) -> int:
     path = Path(args.path)
     print(gutter_overlay(read_text(path)))
@@ -533,6 +830,104 @@ def cmd_resolve(args: argparse.Namespace) -> int:
     result = resolve_coordinate(text, line=line, col=col)
     print(json.dumps(result, indent=2))
     return 0
+
+
+def _parse_facet_filter(raw: Optional[List[str]]) -> Optional[List[str]]:
+    if not raw:
+        return None
+    facets: List[str] = []
+    for item in raw:
+        facets.extend([p for p in item.split(",") if p])
+    return facets or None
+
+
+def cmd_pin(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    text = read_text(path)
+    lines = normalize_lines(text)
+    repo_root = Path(args.repo).resolve()
+
+    line, col, pin_meta = _resolve_pin_location(
+        lines=lines,
+        lc=args.lc,
+        line=args.line,
+        col=args.col,
+        vlg=args.vlg,
+        hlg=args.hlg,
+    )
+
+    resolved = resolve_coordinate(text, line=line, col=col)
+    hit = resolved.get("hit") if isinstance(resolved, dict) else None
+    binding = None
+    if isinstance(hit, dict) and hit.get("matrix") and hit.get("slot") is not None:
+        binding = resolve_pin_to_binding(
+            repo_root,
+            titl=str(hit["matrix"]),
+            slot=int(hit["slot"]),
+            token=hit.get("token") if isinstance(hit.get("token"), int) else None,
+            full=False,
+            max_chars=int(args.max_chars),
+            facet_filter=_parse_facet_filter(args.facet),
+        )
+
+    payload = {"pin": pin_meta, "resolved": resolved, "binding": binding}
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def cmd_content(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    text = read_text(path)
+    lines = normalize_lines(text)
+    repo_root = Path(args.repo).resolve()
+
+    line, col, pin_meta = _resolve_pin_location(
+        lines=lines,
+        lc=args.lc,
+        line=args.line,
+        col=args.col,
+        vlg=args.vlg,
+        hlg=args.hlg,
+    )
+
+    resolved = resolve_coordinate(text, line=line, col=col)
+    hit = resolved.get("hit") if isinstance(resolved, dict) else None
+    binding = None
+    if isinstance(hit, dict) and hit.get("matrix") and hit.get("slot") is not None:
+        binding = resolve_pin_to_binding(
+            repo_root,
+            titl=str(hit["matrix"]),
+            slot=int(hit["slot"]),
+            token=hit.get("token") if isinstance(hit.get("token"), int) else None,
+            full=True,
+            max_chars=0,
+            facet_filter=_parse_facet_filter(args.facet),
+        )
+
+    payload = {"pin": pin_meta, "resolved": resolved, "binding": binding}
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    text = read_text(path)
+
+    skipped: List[str] = []
+    if args.spec:
+        expected = _load_expectations(Path(args.spec))
+    else:
+        expected, skipped = _parse_operator_summary(text)
+
+    if not expected:
+        raise SystemExit("validate requires --spec or an Operator Summary table in the file")
+
+    result = _validate_expectations(text, expected)
+    result["path"] = str(path)
+    if skipped:
+        result["skipped"] = skipped
+    print(json.dumps(result, indent=2))
+    return 2 if result["errors"] else 0
 
 
 def cmd_extract(args: argparse.Namespace) -> int:
@@ -623,6 +1018,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rs.add_argument("--hlg", type=int, help="Horizontal line gutter index (native junction style)")
     rs.set_defaults(func=cmd_resolve)
+
+    pn = sub.add_parser("pin", help="resolve a coordinate to binding + facet excerpts")
+    pn.add_argument("path")
+    pn.add_argument("--repo", default=".", help="Repo root for resolving .map.yaml and facets")
+    pn.add_argument("--lc", help="Coordinate like L0042:C0137")
+    pn.add_argument("--line", type=int, help="0-based line index")
+    pn.add_argument("--col", type=int, help="0-based column index")
+    pn.add_argument("--vlg", type=int, help="Vertical line gutter index (native junction style)")
+    pn.add_argument("--hlg", type=int, help="Horizontal line gutter index (native junction style)")
+    pn.add_argument("--facet", action="append", help="Facet filter (repeatable or comma-separated)")
+    pn.add_argument("--max-chars", type=int, default=1400, help="Excerpt length for facets")
+    pn.set_defaults(func=cmd_pin)
+
+    ct = sub.add_parser("content", help="resolve a coordinate to full facet contents")
+    ct.add_argument("path")
+    ct.add_argument("--repo", default=".", help="Repo root for resolving .map.yaml and facets")
+    ct.add_argument("--lc", help="Coordinate like L0042:C0137")
+    ct.add_argument("--line", type=int, help="0-based line index")
+    ct.add_argument("--col", type=int, help="0-based column index")
+    ct.add_argument("--vlg", type=int, help="Vertical line gutter index (native junction style)")
+    ct.add_argument("--hlg", type=int, help="Horizontal line gutter index (native junction style)")
+    ct.add_argument("--facet", action="append", help="Facet filter (repeatable or comma-separated)")
+    ct.set_defaults(func=cmd_content)
+
+    vd = sub.add_parser("validate", help="validate operator coords against a guttered junction")
+    vd.add_argument("path")
+    vd.add_argument("--spec", help="YAML/JSON with operator coords (optional)")
+    vd.set_defaults(func=cmd_validate)
 
     ex = sub.add_parser(
         "extract",
