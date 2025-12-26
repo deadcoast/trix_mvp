@@ -8,7 +8,7 @@ This scaffold proves one thing: **we can keep your ASCII matrix design as the ca
 
 ## Quickstart
 
-```bash
+```sh
 python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix
 python src/trix_py/tools/trix.py parse examples/blocks/DOCS.trix
 python src/trix_py/tools/trix.py zoom examples/blocks/HUB0.trix --cell 1
