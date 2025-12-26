@@ -115,6 +115,56 @@ def cmd_context(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_bundle(args: argparse.Namespace) -> int:
+    """Build a context bundle for a cell (new Agent Protocol format)."""
+    from lib.bundler import build_context_bundle, bundle_to_json, bundle_to_markdown
+    
+    trix_root = Path(args.trix_root)
+    bundle = build_context_bundle(
+        cell_id=args.cell,
+        trix_root=trix_root,
+        include_imports=not args.no_imports,
+        include_spatial=not args.no_spatial,
+    )
+    
+    if args.format == "json":
+        print(bundle_to_json(bundle))
+    else:
+        print(bundle_to_markdown(bundle))
+    
+    return 0
+
+
+def cmd_dispatch(args: argparse.Namespace) -> int:
+    """Select the next actionable cell."""
+    from lib.dispatch import select_next, dispatch_to_json
+    
+    trix_root = Path(args.trix_root)
+    block_filter = args.blocks.split(",") if args.blocks else None
+    
+    result = select_next(
+        trix_root=trix_root,
+        block_filter=block_filter,
+        priority_max=args.priority,
+    )
+    
+    if args.json:
+        print(dispatch_to_json(result))
+    else:
+        if result.selected:
+            print(f"Selected: {result.selected.cell_id}")
+            print(f"Reason: {result.reason}")
+            print(f"Score: {result.selected.score}")
+            if result.alternatives:
+                print("\nAlternatives:")
+                for alt in result.alternatives[:3]:
+                    print(f"  - {alt.cell_id} (score: {alt.score})")
+        else:
+            print(f"No selection: {result.reason}")
+    
+    return 0 if result.selected else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(prog="trix", description="TRIX geometry-first parser/indexer")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -147,6 +197,22 @@ def main() -> int:
     c.add_argument("--cell", type=int, required=True)
     c.add_argument("--repo", default=".", help="Repo root for resolving facet paths.")
     c.set_defaults(fn=cmd_context)
+
+    # --- Agent Protocol Commands ---
+    b = sub.add_parser("bundle", help="Build context bundle for a cell (Agent Protocol format).")
+    b.add_argument("cell", help="Cell ID (e.g., TASK-5)")
+    b.add_argument("--trix-root", default="src/trix_md", help="Path to trix_md root")
+    b.add_argument("--format", choices=["json", "markdown"], default="markdown", help="Output format")
+    b.add_argument("--no-imports", action="store_true", help="Exclude imported block context")
+    b.add_argument("--no-spatial", action="store_true", help="Exclude spatial neighbors")
+    b.set_defaults(fn=cmd_bundle)
+
+    d = sub.add_parser("dispatch", help="Select next actionable cell (Agent Protocol).")
+    d.add_argument("--trix-root", default="src/trix_md", help="Path to trix_md root")
+    d.add_argument("--blocks", help="Comma-separated block filter (e.g., TASK,CODE)")
+    d.add_argument("--priority", type=int, help="Max priority to consider (1=highest)")
+    d.add_argument("--json", action="store_true", help="Output as JSON")
+    d.set_defaults(fn=cmd_dispatch)
 
     args = ap.parse_args()
     return args.fn(args)

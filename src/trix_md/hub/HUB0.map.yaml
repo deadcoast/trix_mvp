@@ -1,0 +1,60 @@
+# HUB0 — Central Hub 9ode Mapping
+# Maps slots 1-9 to block references
+
+titl: HUB0
+kind: 9ode
+
+cells:
+  "1":
+    kind: block_ref
+    ref: DOCS
+    path: "../blocks/DOCS/matrix.md"
+    description: "Documentation and specifications"
+    
+  "2":
+    kind: block_ref
+    ref: TASK
+    path: "../blocks/TASK/matrix.md"
+    description: "Task and work management"
+    
+  "3":
+    kind: block_ref
+    ref: CODE
+    path: "../blocks/CODE/matrix.md"
+    description: "Source code and implementation"
+    
+  "4":
+    kind: block_ref
+    ref: ARCH
+    path: "../blocks/ARCH/matrix.md"
+    description: "Architecture and design"
+    
+  "5":
+    kind: block_ref
+    ref: AGNT
+    path: "../blocks/AGNT/matrix.md"
+    description: "Agent steering and constraints"
+    
+  "6":
+    kind: block_ref
+    ref: TEST
+    path: "../blocks/TEST/matrix.md"
+    description: "Testing and validation"
+    
+  "7":
+    kind: block_ref
+    ref: DEPL
+    path: "../blocks/DEPL/matrix.md"
+    description: "Deployment and releases"
+    
+  "8":
+    kind: block_ref
+    ref: OPER
+    path: "../blocks/OPER/matrix.md"
+    description: "Operations and monitoring"
+    
+  "9":
+    kind: block_ref
+    ref: META
+    path: "../blocks/META/matrix.md"
+    description: "System metadata and configuration"

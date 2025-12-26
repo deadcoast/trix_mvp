@@ -1,0 +1,380 @@
+# TRIX Slot Semantics Schema v0.1
+# Machine-readable definition of slot meanings per block
+
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "trix:slot_semantics:v0.1"
+title: "TRIX Slot Semantics"
+
+# Universal slot definitions (base layer)
+universal:
+  zones:
+    definition:
+      slots: [1, 2, 3]
+      row: 1
+      purpose: "What this block is about; inputs and references"
+    execution:
+      slots: [4, 5, 6]
+      row: 2
+      purpose: "Active work: backlog, current focus, decisions"
+    completion:
+      slots: [7, 8, 9]
+      row: 3
+      purpose: "Results: outputs, validation, history"
+  
+  columns:
+    left:
+      slots: [1, 4, 7]
+      purpose: "Primary artifacts"
+    center:
+      slots: [2, 5, 8]
+      purpose: "Flow nodes"
+    right:
+      slots: [3, 6, 9]
+      purpose: "Context/metadata"
+  
+  slots:
+    1:
+      role: charter
+      purpose: "Block's mission and scope"
+      default_facets: [doc, steer]
+    2:
+      role: inputs
+      purpose: "What flows into this block"
+      default_facets: [doc]
+    3:
+      role: references
+      purpose: "External context and dependencies"
+      default_facets: [doc]
+    4:
+      role: backlog
+      purpose: "Queued work items"
+      default_facets: [task]
+    5:
+      role: now
+      purpose: "Current focus (highest priority)"
+      default_facets: [task, steer]
+    6:
+      role: decisions
+      purpose: "Choices and rationale"
+      default_facets: [doc]
+    7:
+      role: outputs
+      purpose: "Produced artifacts"
+      default_facets: [doc]
+    8:
+      role: validation
+      purpose: "Review and verification"
+      default_facets: [task]
+    9:
+      role: logs
+      purpose: "History and audit trail"
+      default_facets: [log]
+
+# Block-specific overrides
+blocks:
+
+  TASK:
+    description: "Task management and work tracking"
+    overrides:
+      1:
+        role: sprint_goal
+        purpose: "Current iteration objectives"
+      2:
+        role: requirements
+        purpose: "What tasks must satisfy"
+      3:
+        role: blockers
+        purpose: "Dependencies and impediments"
+      5:
+        role: in_progress
+        purpose: "Currently active tasks"
+      6:
+        role: assignments
+        purpose: "Who owns what"
+      7:
+        role: done
+        purpose: "Completed tasks before archive"
+      8:
+        role: review_queue
+        purpose: "Tasks awaiting verification"
+      9:
+        role: task_history
+        purpose: "State transitions and timestamps"
+
+  DOCS:
+    description: "Documentation and knowledge base"
+    overrides:
+      1:
+        role: doc_strategy
+        purpose: "Documentation approach"
+      2:
+        role: source_material
+        purpose: "Raw content to document"
+      3:
+        role: external_refs
+        purpose: "Links to external docs"
+      4:
+        role: doc_backlog
+        purpose: "Topics needing documentation"
+      5:
+        role: active_drafts
+        purpose: "Documents in progress"
+      6:
+        role: style_guide
+        purpose: "Documentation conventions"
+      7:
+        role: published
+        purpose: "Finalized documentation"
+      8:
+        role: doc_review
+        purpose: "Peer review queue"
+      9:
+        role: changelog
+        purpose: "Documentation revisions"
+
+  CODE:
+    description: "Source code and implementation"
+    overrides:
+      1:
+        role: code_vision
+        purpose: "Architecture principles"
+        facets: [doc, steer]
+      2:
+        role: specs
+        purpose: "Technical specifications"
+      3:
+        role: api_index
+        purpose: "External API references"
+        facets: [doc, code]
+      4:
+        role: tech_debt
+        purpose: "Refactoring queue"
+      5:
+        role: active_branch
+        purpose: "Current implementation"
+        facets: [code, task]
+      6:
+        role: adrs
+        purpose: "Architecture Decision Records"
+      7:
+        role: merged_code
+        purpose: "Completed implementations"
+        facets: [code]
+      8:
+        role: pr_queue
+        purpose: "Code review pipeline"
+      9:
+        role: commit_log
+        purpose: "Recent commits"
+
+  ARCH:
+    description: "Architecture and system design"
+    overrides:
+      1:
+        role: system_goals
+        purpose: "Non-functional requirements"
+      2:
+        role: constraints
+        purpose: "Technical limitations"
+      3:
+        role: patterns_lib
+        purpose: "Reference architectures"
+      4:
+        role: design_proposals
+        purpose: "Pending designs"
+      5:
+        role: active_design
+        purpose: "Current architecture work"
+      6:
+        role: adr_registry
+        purpose: "Approved decisions"
+      7:
+        role: diagrams
+        purpose: "Architecture artifacts"
+      8:
+        role: design_review
+        purpose: "Architecture review queue"
+      9:
+        role: evolution_log
+        purpose: "Architecture history"
+
+  AGNT:
+    description: "Agent configuration and steering"
+    overrides:
+      1:
+        role: agent_mandate
+        purpose: "Agent's core purpose"
+        facets: [steer]
+      2:
+        role: context_sources
+        purpose: "What agent can read"
+        facets: [config]
+      3:
+        role: capabilities
+        purpose: "Tool and skill registry"
+      4:
+        role: prompt_queue
+        purpose: "Pending agent tasks"
+      5:
+        role: active_session
+        purpose: "Current agent context"
+        facets: [steer, task]
+      6:
+        role: rules
+        purpose: "Behavioral constraints"
+        facets: [steer]
+      7:
+        role: output_targets
+        purpose: "Where agent writes"
+        facets: [config]
+      8:
+        role: guardrails
+        purpose: "Safety and quality checks"
+        facets: [steer]
+      9:
+        role: session_logs
+        purpose: "Agent interaction history"
+
+  TEST:
+    description: "Testing and quality assurance"
+    overrides:
+      1:
+        role: test_strategy
+        purpose: "QA approach"
+      2:
+        role: test_data
+        purpose: "Fixtures and mocks"
+        facets: [config]
+      3:
+        role: coverage_map
+        purpose: "Code coverage targets"
+      4:
+        role: test_backlog
+        purpose: "Tests to write"
+      5:
+        role: running_tests
+        purpose: "Active test execution"
+      6:
+        role: test_standards
+        purpose: "Testing conventions"
+        facets: [steer]
+      7:
+        role: results
+        purpose: "Test reports"
+        facets: [log, metric]
+      8:
+        role: flaky_tests
+        purpose: "Unstable test queue"
+      9:
+        role: ci_history
+        purpose: "Test run history"
+
+  DEPL:
+    description: "Deployment and release pipeline"
+    overrides:
+      1:
+        role: deploy_strategy
+        purpose: "Release approach"
+      2:
+        role: artifacts
+        purpose: "Build outputs to deploy"
+        facets: [config]
+      3:
+        role: environments
+        purpose: "Target environments"
+        facets: [config]
+      4:
+        role: release_queue
+        purpose: "Pending releases"
+      5:
+        role: active_deploy
+        purpose: "Current deployment"
+      6:
+        role: release_notes
+        purpose: "What's shipping"
+      7:
+        role: deployed
+        purpose: "Successfully deployed versions"
+        facets: [log]
+      8:
+        role: health_checks
+        purpose: "Post-deploy validation"
+        facets: [metric]
+      9:
+        role: deploy_log
+        purpose: "Deployment history"
+
+  OPER:
+    description: "Operations and incident management"
+    overrides:
+      1:
+        role: sla_slo
+        purpose: "Service level objectives"
+      2:
+        role: metrics
+        purpose: "Incoming telemetry"
+        facets: [metric]
+      3:
+        role: runbooks
+        purpose: "Operational procedures"
+      4:
+        role: alerts_backlog
+        purpose: "Non-urgent alerts"
+      5:
+        role: active_incidents
+        purpose: "Current issues"
+        facets: [task, log]
+      6:
+        role: escalation
+        purpose: "On-call decisions"
+      7:
+        role: resolutions
+        purpose: "Incident resolutions"
+      8:
+        role: post_mortems
+        purpose: "Incident reviews"
+      9:
+        role: ops_log
+        purpose: "Operational history"
+
+  META:
+    description: "Project metadata and configuration"
+    overrides:
+      1:
+        role: project_vision
+        purpose: "Why project exists"
+      2:
+        role: dependencies
+        purpose: "External dependencies"
+        facets: [config]
+      3:
+        role: conventions
+        purpose: "Project-wide standards"
+      4:
+        role: roadmap
+        purpose: "Long-term planning"
+      5:
+        role: current_focus
+        purpose: "This iteration"
+      6:
+        role: project_decisions
+        purpose: "Key choices"
+      7:
+        role: releases
+        purpose: "Version history"
+      8:
+        role: project_metrics
+        purpose: "Project health indicators"
+        facets: [metric]
+      9:
+        role: change_history
+        purpose: "Project evolution"
+
+# Query helpers
+query_shortcuts:
+  all_now: "slot == 5"
+  all_blocked: "status == 'blocked'"
+  all_active: "status == 'active'"
+  review_ready: "slot == 8 AND status == 'active'"
+  outputs_pending: "slot == 7 AND status == 'active'"
+  high_priority: "priority <= 2 AND status in ['active', 'draft']"

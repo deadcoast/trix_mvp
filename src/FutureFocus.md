@@ -326,8 +326,15 @@ context_bundle:
 
 ## Tracking
 
+### Specification Phase
 - [x] Phase 1a: Cell/Facet Schema → `docs/spec/CELL_SCHEMA_v0.1.md`
 - [x] Phase 1b: 9ode/Super Compounding → `docs/spec/COMPOUNDING_v0.1.md`
 - [x] Phase 2: Composition Operators → `docs/spec/COMPOSITION_v0.1.md`
 - [x] Phase 3: Agent Protocol → `docs/spec/AGENT_PROTOCOL_v0.1.md`
+
+### Implementation Phase
+- [x] A. Populate trix_md blocks → `src/trix_md/blocks/{TASK,DOCS,CODE,ARCH,AGNT,TEST,DEPL,OPER,META}/`
+- [x] B. Create HUB0 9ode → `src/trix_md/hub/HUB0.md`, `HUB0.map.yaml`
+- [x] C. Reference implementations → `src/trix_py/lib/{bundler,dispatch}.py`, CLI commands
+- [x] D. Slot semantics spec → `docs/spec/SLOT_SEMANTICS_v0.1.md`, `schemas/slot_semantics.schema.yaml`
 
