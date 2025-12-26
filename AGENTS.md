@@ -8,6 +8,7 @@
 - `docs/` captures specs and notes, with primary references in `docs/spec/markdown/`.
 
 ## Build, Test, and Development Commands
+- `uv sync` installs dependencies (Python 3.13+).
 - `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix` validates a 3x3 block.
 - `python src/trix_py/tools/trix.py parse examples/blocks/DOCS.trix` parses a `.trix` file to JSON.
 - `python src/trix_py/tools/trix.py index examples --out examples/.index.json` builds an example index.

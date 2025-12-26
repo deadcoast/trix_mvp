@@ -48,4 +48,4 @@ python src/geometry_core/tools/trix.py content src/geometry_core/examples/juncti
 - Merge/plug operators (mount block into a cell).
 - Transforms as first-class nodes (task->code, code->docs).
 - Facets as first-class nodes (task->steer, task->config).
-- CLI for zooming, context, and next task.
+- Query/filter CLI over indexed nodes (status/tags/blocks).

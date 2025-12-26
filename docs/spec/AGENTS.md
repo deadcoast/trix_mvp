@@ -1,39 +1,29 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-The repository is documentation-only. Active content lives in `notes/`, organized by topic:
-- `notes/formats/` holds format definitions (for example `notes/formats/DevDecimal++/`).
-- `notes/version_control/` contains versioning examples and comparisons.
-- `notes/templates/` provides starter templates.
-- `notes/metadata/` stores supporting references.
-
-The `framework_drafts/` and `hierarchical_taxonomy/` directories are currently empty placeholders; add new material there only if you are expanding those areas intentionally.
+- `src/trix_py/` holds the geometry-first parser/indexer library and CLI at `src/trix_py/tools/trix.py`.
+- `src/geometry_core/` owns junction tooling and specs (`src/geometry_core/spec/`, `src/geometry_core/tools/`).
+- `src/trix_md/` contains the Markdown matrix workspace (`blocks/`, `hub/`) and a small CLI.
+- `examples/` provides sample `.trix` blocks, `.map.yaml` bindings, and facet files.
+- `docs/spec/` collects legacy specs; current canonical specs live under `src/geometry_core/spec/`.
 
 ## Build, Test, and Development Commands
-There are no build or test scripts in this repository. If you use Markdown linting locally, point it at the repo-level config:
-- `markdownlint "**/*.md"` (uses `.markdownlint.json`).
+- `uv sync` installs dependencies (Python 3.13+).
+- `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix` validates a `.trix` block.
+- `python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.yaml` validates junction operators.
+- `python src/trix_md/tools/trix.py index --repo src/trix_md` builds the Markdown workspace index.
+- `python -m pytest` runs tests (pytest discovers under `src/`).
 
 ## Coding Style & Naming Conventions
-This repo follows the DevDecimal++ document format:
-- File paths: `NN_Top-Level/NN.MM_Page-Slug.md` (zero-padded IDs).
-- Headings: `# [NN.MM] Title`, major sections `## [NN.MM.10] ...` (slot by tens).
-- Slugs allow `A-Z a-z 0-9 _ - .` and no spaces.
-
-Keep IDs stable; insert new sections by slotting (for example `.15`, `.25`) instead of renumbering. Use the required header block and section order defined in `notes/formats/DevDecimal++/DocPageContract.md`.
-
-Markdown style is enforced by `.markdownlint.json`: dash lists, 2-space list indentation, and fenced code blocks with backticks.
+- Python: Black (line length 120), isort (Black profile), mypy (strict) per `pyproject.toml`.
+- Block titles are 4-char tokens like `[TASK]`; slots are `[1]..[9]`.
+- Facet files follow `<NODE_ID>.<facet>.md` (for example `TASK-5.task.md`).
 
 ## Testing Guidelines
-There are no automated tests. Validate changes by checking:
-- Heading IDs match the filename prefix.
-- Section order follows the Doc Page Contract.
-- `status`, `review_cycle`, and `last_verified` are set in the header block.
+- Add tests in `src/trix_py/lib/test_early_indexer/` or under `tests/` if introduced.
+- When changing junction parsing or specs, update `src/geometry_core/matrix_junction.md` and re-run validation.
+- For doc-only edits, optionally run `markdownlint "**/*.md"` (uses `.markdownlint.json`).
 
 ## Commit & Pull Request Guidelines
-This checkout does not include Git history, so there are no repo-specific commit conventions to cite. If you open a PR:
-- Summarize what changed and why, and list the affected doc IDs (for example `02.20.40.03`).
-- Call out any renumbering or structural moves explicitly.
-- Include before/after examples for major structure changes.
-
-## Templates & References
-Prefer existing templates in `notes/templates/` or the “New Page Template” in `notes/formats/DevDecimal++/DocPageContract.md` to keep formatting consistent.
+- Use conventional commit prefixes (`feat:`, `fix:`, `docs:`).
+- PRs should summarize spec/CLI changes, list affected docs, and include sample CLI output when behavior changes.

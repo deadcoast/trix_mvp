@@ -5,6 +5,8 @@ Below is the deep, full-scope synthesis of what’s in the repo *right now*, wha
 -->
 ---
 
+> Status: Archived patch notes from early tooling experiments; some commands reference scripts that are not part of the current repo.
+
 ## 1) What’s actually in the repo (and why it matters)
 
 ### A) You now have 3 parallel “layers” (they must be wired together, not merged)
