@@ -5,11 +5,12 @@ Summary: matrix agentic steering system
 Project-URL: Homepage, https://deadcoast.net
 Project-URL: Repository, https://github.com/deadcoast/trix
 Project-URL: Issues, https://github.com/deadcoast/trix/issues
-Classifier: Programming Language :: Python :: 3.12.8
+Classifier: Programming Language :: Python :: 3.12
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.12.8
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: black<25.0.0,>=24.4.2
 Requires-Dist: isort<6.0.0,>=5.13.2
 Requires-Dist: sourcery<2.0.0,>=1.14.0
@@ -41,12 +42,6 @@ Requires-Dist: importlib-metadata>=6.8.0
 Requires-Dist: zipp>=3.16.2
 Requires-Dist: tomlkit>=0.12.1
 Requires-Dist: pygments>=2.16.1
-Requires-Dist: pydantic>=2.3.0
-Requires-Dist: pydantic-settings>=2.0.3
-Requires-Dist: pydantic_core>=2.6.3
-Requires-Dist: typing-inspect>=0.9.0
-Requires-Dist: importlib-metadata>=6.8.0
-Requires-Dist: tomlkit>=0.12.1
 Requires-Dist: types-requests>=2.31.0
 Requires-Dist: types-urllib3>=1.26.0
 Requires-Dist: types-python-dateutil>=2.8.0
@@ -58,6 +53,7 @@ Requires-Dist: types-attrs>=19.1.0
 Requires-Dist: types-freezegun>=1.1.0
 Requires-Dist: types-tabulate>=0.8.0
 Requires-Dist: types-pygments>=2.8.0
+Dynamic: license-file
 
 # TRIX Engine v0.1 (geometry-first)
 

@@ -66,7 +66,7 @@ R002:
   form: "-|-"
 R003:
   rule: "Patches are data conduits; connect export lanes to import lanes along the patch."
-  example: "~|~ at vlg 28, hlg 05"
+  example: "~|~ at vlg 28, hlg 03->05"
   form: "~"
 R004:
   rule: "Import nodes register requirements under the parent alias."
@@ -160,7 +160,7 @@ R011:
 |02|                     |---|-----|%|-----|---|                     |  |
 |01|                                                                 |  |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|21|23|24|
+|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ```
 
@@ -202,6 +202,7 @@ operator: "-|-"
 pattern: "|-|-|"
 effect: lock
 scope: junction
+block: minimal_matrix
 protects:
   - geometry
   - bindings
@@ -232,13 +233,14 @@ operator: "~"
 pattern: "~|~"
 effect: connect
 scope: junction
+block: minimal_matrix
 connects:
   - export_lane
   - import_lane
 example: "~|~"
 coord:
   - vlg: 28
-    hlg: 05
+    hlg: 03->05
 ```
 
 ---
@@ -258,18 +260,19 @@ pattern: "(+)<label>"
 effect: export
 parent: user
 alias: u
+block: minimal_matrix
 writes:
   - "user.input.u"
 example: "(+)user"
 coord:
   - vlg: 28
-    hlg: 06
+    hlg: 05->06
     label: "(+)user"
   - vlg: "27->26,18->15"
-    hlg: 06
+    hlg: 05->06
     label: "(+)"
   - vlg: "28->26,18->15"
-    hlg: 16
+    hlg: 15->16
     label: "(+)"
 ```
 
@@ -284,12 +287,13 @@ ID: import_node
 tag: R004
 operator: "[ ]"
 example: "[-]req"
+block: minimal_matrix
 coord:
   - vlg: "28->26,18->15"
-    hlg: 09
+    hlg: 09->10
     label: "[-] user lane"
   - vlg: "28->26,18->15"
-    hlg: 19
+    hlg: 19->20
     label: "[-] trixie lane"
 ```
 
@@ -304,6 +308,7 @@ ID: export_data
 tag: R005
 operator: "+"
 example: "| + |"
+block: minimal_matrix
 coord:
   - vlg: 23
     hlg: 15->16
@@ -322,6 +327,7 @@ ID: import_data
 tag: R006
 operator: "-"
 example: "| - |"
+block: minimal_matrix
 coord:
   - vlg: 23
     hlg: 09->10
@@ -340,6 +346,7 @@ ID: junction_port
 tag: R007
 operator: "[| |]"
 example: "|-|-|----[| |]----|-|-|"
+block: minimal_matrix
 coord:
   - vlg: 24
     hlg: 12->13
@@ -358,11 +365,12 @@ ID: matrix_bridge
 tag: R008
 operator: "[//]"
 example: "|-------[//]-------|"
+block: matrix_scaffold
 coord:
   - vlg: 12
-    hlg: 13
+    hlg: 12->13
   - vlg: 10
-    hlg: 13
+    hlg: 12->13
 ```
 
 ---
@@ -376,6 +384,7 @@ ID: matrix_core
 tag: R009
 operator: "%"
 example: "|-----|%|-----|"
+block: matrix_junction
 coord:
   - vlg: 16
     hlg: 06->07
@@ -398,17 +407,19 @@ coord:
 ---
 ### Operator Summary (coords from guttered examples)
 
-| Rule | Operator | Meaning | Coords (vlg/hlg) |
+Coords are prefixed with the block name: `block:vlg/hlg`.
+
+| Rule | Operator | Meaning | Coords (block:vlg/hlg) |
 | --- | --- | --- | --- |
-| R001 | `(+)` | export node | 28/06, 27->26 & 18->15/06, 28->26 & 18->15/16 |
-| R002 | `-|-` | coupler | 24/09->10, 24/15->16, 20/09->10, 20/15->16 |
-| R003 | `~` | patch | 28/05 |
-| R004 | `[-]` | import node | 28->26 & 18->15/09, 28->26 & 18->15/19 |
-| R005 | `+` | export data | 23/15->16, 21/09->10 |
-| R006 | `-` | import data | 23/09->10, 21/15->16 |
-| R007 | `[| |]` | junction port | 24/12->13, 20/12->13 |
-| R008 | `[//]` | matrix bridge | 12/13, 10/13 |
-| R009 | `%` | matrix core | 16/06->07, 16/18->19, 12/06->07, 12/18->19, 11/12->13, 07/12->13, 06/12->13, 02/12->13 |
+| R001 | `(+)` | export node | minimal_matrix:28/05->06, minimal_matrix:27->26 & 18->15/05->06, minimal_matrix:28->26 & 18->15/15->16 |
+| R002 | `-|-` | coupler | minimal_matrix:24/09->10, minimal_matrix:24/15->16, minimal_matrix:20/09->10, minimal_matrix:20/15->16 |
+| R003 | `~` | patch | minimal_matrix:28/03->05 |
+| R004 | `[-]` | import node | minimal_matrix:28->26 & 18->15/09->10, minimal_matrix:28->26 & 18->15/19->20 |
+| R005 | `+` | export data | minimal_matrix:23/15->16, minimal_matrix:21/09->10 |
+| R006 | `-` | import data | minimal_matrix:23/09->10, minimal_matrix:21/15->16 |
+| R007 | `[| |]` | junction port | minimal_matrix:24/12->13, minimal_matrix:20/12->13 |
+| R008 | `[//]` | matrix bridge | matrix_scaffold:12/12->13, matrix_scaffold:10/12->13 |
+| R009 | `%` | matrix core | matrix_junction:16/06->07, matrix_junction:16/18->19, matrix_junction:12/06->07, matrix_junction:12/18->19, matrix_junction:11/12->13, matrix_junction:07/12->13, matrix_junction:06/12->13, matrix_junction:02/12->13 |
 
 Validation uses a data-driven spec at `src/geometry_core/spec/matrix_junction_ops.yaml` (or `.json`):
 
@@ -439,6 +450,7 @@ python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junctio
 |12| 
 |13| 
 |14| 
+|15| 
 |16| 
 |17| 
 |18| 
@@ -487,7 +499,7 @@ python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junctio
 > gutter_horizontal
 ```yaml
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|21|23|24|
+|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ```
 
@@ -507,7 +519,7 @@ python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junctio
 ```
 
 > minimal_matrix
-> - Matrix example build with nodes, subnodes, data, and junctions
+- Matrix example build with nodes, subnodes, data, and junctions
 
 ```yaml
 +--+-----------------------------------------------------------------+--+
@@ -557,7 +569,7 @@ python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junctio
 |02||                                                               ||  |
 |01|+---------------------------------------------------------------+|  |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|21|23|24|
+|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ```
 
@@ -588,6 +600,6 @@ python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junctio
 |02||                                                               ||  |
 |01|+---------------------------------------------------------------+|  |
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|21|23|24|
+|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|
 +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ```

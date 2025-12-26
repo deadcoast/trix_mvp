@@ -221,6 +221,10 @@ python src/geometry_core/tools/trix.py extract src/geometry_core/matrix_junction
 
 # validate operator placements using the canonical spec
 python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.yaml
+
+# one-command helper + JSON spec variant
+make validate-junction
+python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.json
 ```
 
 This gives you the first “real steering primitive” you need:

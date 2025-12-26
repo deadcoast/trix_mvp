@@ -28,7 +28,7 @@ import re
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 import junction_validate
 
@@ -403,7 +403,7 @@ def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, 
     return row_line, col
 
 
-def resolve_coordinate(text: str, line: int, col: int) -> Dict[str, object]:
+def resolve_coordinate(text: str, line: int, col: int) -> Dict[str, Any]:
     """Resolve an absolute (line, col) to an embedded matrix + slot."""
     lines = normalize_lines(text)
     if line < 0 or line >= len(lines):
@@ -507,6 +507,44 @@ def extract_region_vlg_hlg(
         "x1": x1,
         "rows": rows,
     }
+
+
+def _normalize_block_label(label: str) -> str:
+    """Normalize a block label to a consistent token."""
+    token = re.sub(r"[^a-z0-9]+", "_", label.strip().lower())
+    return token.strip("_")
+
+
+def _extract_labeled_blocks(text: str) -> Dict[str, str]:
+    """Extract fenced code blocks that follow '> <label>' markers."""
+    lines = normalize_lines(text)
+    blocks: Dict[str, str] = {}
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith(">"):
+            label = line[1:].strip()
+            name = _normalize_block_label(label)
+            j = i + 1
+            while j < len(lines):
+                peek = lines[j].strip()
+                if peek.startswith(">"):
+                    break
+                if peek.startswith("```"):
+                    break
+                j += 1
+            if j >= len(lines) or lines[j].strip().startswith(">"):
+                i += 1
+                continue
+            start = j + 1
+            k = start
+            while k < len(lines) and not lines[k].strip().startswith("```"):
+                k += 1
+            blocks[name] = "\n".join(lines[start:k])
+            i = k + 1
+            continue
+        i += 1
+    return blocks
 
 
 def _safe_load_yaml(path: Path) -> Dict[str, Any]:
@@ -645,7 +683,7 @@ def _resolve_pin_location(
     col: Optional[int],
     vlg: Optional[int],
     hlg: Optional[int],
-) -> Tuple[int, int, Dict[str, object]]:
+) -> Tuple[int, int, Dict[str, Any]]:
     """Resolve pin input args into an absolute (line, col) and metadata."""
     if lc:
         line_num, col_num = _parse_lc(lc)
@@ -662,14 +700,67 @@ def _resolve_pin_location(
     raise SystemExit("pin/content requires either --lc, --line/--col, or --vlg/--hlg")
 
 
-def cmd_gutter(args: argparse.Namespace) -> int:
+class _PathArgs(Protocol):
+    """Args that carry a path."""
+    path: str
+
+
+class _AddrArgs(Protocol):
+    """Args for slot/row/col conversions."""
+    slot: Optional[int]
+    row: Optional[int]
+    col: Optional[int]
+
+
+class _ResolveArgs(_PathArgs, Protocol):
+    """Args for coordinate resolution."""
+    lc: Optional[str]
+    line: Optional[int]
+    col: Optional[int]
+    vlg: Optional[int]
+    hlg: Optional[int]
+
+
+class _PinArgs(_ResolveArgs, Protocol):
+    """Args for pin resolution with facets."""
+    repo: str
+    facet: Optional[List[str]]
+    max_chars: int
+
+
+class _ContentArgs(_ResolveArgs, Protocol):
+    """Args for full content resolution."""
+    repo: str
+    facet: Optional[List[str]]
+
+
+class _ValidateArgs(_PathArgs, Protocol):
+    """Args for operator validation."""
+    spec: Optional[str]
+
+
+class _ExtractArgs(_PathArgs, Protocol):
+    """Args for vlg/hlg extraction."""
+    vlg0: int
+    vlg1: int
+    hlg0: int
+    hlg1: int
+
+
+class _IndexArgs(Protocol):
+    """Args for repo indexing."""
+    root: str
+    out: str
+
+
+def cmd_gutter(args: _PathArgs) -> int:
     """Print a file with overlay L/C gutters."""
     path = Path(args.path)
     print(gutter_overlay(read_text(path)))
     return 0
 
 
-def cmd_addr(args: argparse.Namespace) -> int:
+def cmd_addr(args: _AddrArgs) -> int:
     """Convert between slot and row/col coordinates."""
     if args.slot is not None:
         r, c = slot_to_rc(args.slot)
@@ -682,7 +773,7 @@ def cmd_addr(args: argparse.Namespace) -> int:
     raise SystemExit("addr requires either --slot or --row and --col")
 
 
-def cmd_parse(args: argparse.Namespace) -> int:
+def cmd_parse(args: _PathArgs) -> int:
     """Parse the first 3x3 block in a file."""
     path = Path(args.path)
     block = parse_first_block(read_text(path))
@@ -690,7 +781,7 @@ def cmd_parse(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_scan(args: argparse.Namespace) -> int:
+def cmd_scan(args: _PathArgs) -> int:
     """Scan a junction canvas for embedded 3x3 blocks."""
     path = Path(args.path)
     embedded = scan_junction(read_text(path))
@@ -715,7 +806,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_resolve(args: argparse.Namespace) -> int:
+def cmd_resolve(args: _ResolveArgs) -> int:
     """Resolve a coordinate to a TRIX address."""
     path = Path(args.path)
     text = read_text(path)
@@ -724,9 +815,9 @@ def cmd_resolve(args: argparse.Namespace) -> int:
     if args.lc:
         line, col = _parse_lc(args.lc)
     elif args.line is not None and args.col is not None:
-        line, col = int(args.line), int(args.col)
+        line, col = args.line, args.col
     elif args.vlg is not None and args.hlg is not None:
-        line, col = _guttered_vlg_hlg_to_lc(lines, int(args.vlg), int(args.hlg))
+        line, col = _guttered_vlg_hlg_to_lc(lines, args.vlg, args.hlg)
     else:
         raise SystemExit("resolve requires either --lc, --line/--col, or --vlg/--hlg")
 
@@ -745,7 +836,7 @@ def _parse_facet_filter(raw: Optional[List[str]]) -> Optional[List[str]]:
     return facets or None
 
 
-def cmd_pin(args: argparse.Namespace) -> int:
+def cmd_pin(args: _PinArgs) -> int:
     """Resolve a coordinate to a binding with facet excerpts."""
     path = Path(args.path)
     text = read_text(path)
@@ -764,14 +855,23 @@ def cmd_pin(args: argparse.Namespace) -> int:
     resolved = resolve_coordinate(text, line=line, col=col)
     hit = resolved.get("hit") if isinstance(resolved, dict) else None
     binding = None
-    if isinstance(hit, dict) and hit.get("matrix") and hit.get("slot") is not None:
+    if isinstance(hit, dict):
+        matrix = hit.get("matrix")
+        slot = hit.get("slot")
+        token = hit.get("token")
+    else:
+        matrix = None
+        slot = None
+        token = None
+
+    if isinstance(matrix, str) and isinstance(slot, int):
         binding = resolve_pin_to_binding(
             repo_root,
-            titl=str(hit["matrix"]),
-            slot=int(hit["slot"]),
-            token=hit.get("token") if isinstance(hit.get("token"), int) else None,
+            titl=matrix,
+            slot=slot,
+            token=token if isinstance(token, int) else None,
             full=False,
-            max_chars=int(args.max_chars),
+            max_chars=args.max_chars,
             facet_filter=_parse_facet_filter(args.facet),
         )
 
@@ -780,7 +880,7 @@ def cmd_pin(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_content(args: argparse.Namespace) -> int:
+def cmd_content(args: _ContentArgs) -> int:
     """Resolve a coordinate to a binding with full facet content."""
     path = Path(args.path)
     text = read_text(path)
@@ -799,12 +899,21 @@ def cmd_content(args: argparse.Namespace) -> int:
     resolved = resolve_coordinate(text, line=line, col=col)
     hit = resolved.get("hit") if isinstance(resolved, dict) else None
     binding = None
-    if isinstance(hit, dict) and hit.get("matrix") and hit.get("slot") is not None:
+    if isinstance(hit, dict):
+        matrix = hit.get("matrix")
+        slot = hit.get("slot")
+        token = hit.get("token")
+    else:
+        matrix = None
+        slot = None
+        token = None
+
+    if isinstance(matrix, str) and isinstance(slot, int):
         binding = resolve_pin_to_binding(
             repo_root,
-            titl=str(hit["matrix"]),
-            slot=int(hit["slot"]),
-            token=hit.get("token") if isinstance(hit.get("token"), int) else None,
+            titl=matrix,
+            slot=slot,
+            token=token if isinstance(token, int) else None,
             full=True,
             max_chars=0,
             facet_filter=_parse_facet_filter(args.facet),
@@ -815,10 +924,11 @@ def cmd_content(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_validate(args: argparse.Namespace) -> int:
+def cmd_validate(args: _ValidateArgs) -> int:
     """Validate operator placement using a spec or inline summary table."""
     path = Path(args.path)
     text = read_text(path)
+    labeled_blocks = _extract_labeled_blocks(text)
 
     skipped: List[str] = []
     if args.spec:
@@ -829,15 +939,54 @@ def cmd_validate(args: argparse.Namespace) -> int:
     if not expected:
         raise SystemExit("validate requires --spec or an Operator Summary table in the file")
 
-    result = junction_validate.validate_expectations(text, expected, extract_region_vlg_hlg)
-    result["path"] = str(path)
+    default_block = "minimal_matrix" if "minimal_matrix" in labeled_blocks else None
+    grouped: Dict[Optional[str], List[junction_validate.OperatorExpectation]] = {}
+    for entry in expected:
+        block = entry.block or default_block
+        grouped.setdefault(block, []).append(entry)
+
+    errors: List[Dict[str, Any]] = []
+    checked = 0
+    for block, entries in grouped.items():
+        if block is None:
+            block_text = text
+        else:
+            block_text = labeled_blocks.get(block)
+            if block_text is None:
+                for entry in entries:
+                    errors.append(
+                        {
+                            "operator": entry.operator,
+                            "rule": entry.rule,
+                            "block": block,
+                            "vlg": [entry.vlg0, entry.vlg1],
+                            "hlg": [entry.hlg0, entry.hlg1],
+                            "region": "",
+                            "error": "block not found",
+                        }
+                    )
+                checked += len(entries)
+                continue
+
+        result = junction_validate.validate_expectations(
+            block_text,
+            entries,
+            extract_region_vlg_hlg,
+        )
+        checked += int(result.get("checked", 0))
+        for err in result.get("errors", []):
+            if block is not None:
+                err["block"] = block
+        errors.extend(result.get("errors", []))
+
+    payload = {"path": str(path), "checked": checked, "errors": errors}
     if skipped:
-        result["skipped"] = skipped
-    print(json.dumps(result, indent=2))
-    return 2 if result["errors"] else 0
+        payload["skipped"] = skipped
+    print(json.dumps(payload, indent=2))
+    return 2 if errors else 0
 
 
-def cmd_extract(args: argparse.Namespace) -> int:
+def cmd_extract(args: _ExtractArgs) -> int:
     """Extract a vlg/hlg rectangular region from a junction canvas."""
     path = Path(args.path)
     text = read_text(path)
@@ -846,7 +995,7 @@ def cmd_extract(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_index(args: argparse.Namespace) -> int:
+def cmd_index(args: _IndexArgs) -> int:
     """Scan a repo tree for embedded 3x3 blocks and write an index."""
     root = Path(args.root)
     out_path = Path(args.out)

@@ -39,11 +39,14 @@ def die(msg: str, code: int = 1) -> NoReturn:
 
 def load_json(path: Path) -> Dict[str, Any]:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         die(f"Missing config: {path}")
     except json.JSONDecodeError as e:
         die(f"Invalid JSON in {path}: {e}")
+    if not isinstance(data, dict):
+        die(f"Invalid JSON in {path}: expected object at top level")
+    return data
 
 
 def split_front_matter(text: str) -> Tuple[Dict[str, Any], str]:
@@ -59,13 +62,14 @@ def split_front_matter(text: str) -> Tuple[Dict[str, Any], str]:
         die("Front matter starts with '---' but never ends with '---'")
     fm_text = "\n".join(lines[1:end])
     body = "\n".join(lines[end + 1 :])
+    fm: Dict[str, Any] = {}
     try:
         fm = yaml.safe_load(fm_text) or {}
-        if not isinstance(fm, dict):
-            die("Front matter must be a YAML mapping (key: value)")
-        return fm, body
     except yaml.YAMLError as e:
         die(f"Invalid YAML front matter: {e}")
+    if not isinstance(fm, dict):
+        die("Front matter must be a YAML mapping (key: value)")
+    return fm, body
 
 
 def read_front_matter(path: Path) -> Dict[str, Any]:

@@ -3,21 +3,23 @@ operators:
   - id: export_node
     rule: R001
     operator: "(+)"
+    block: minimal_matrix
     coords:
       - vlg: 28
-        hlg: 06
+        hlg: "05->06"
       - vlg: "27->26"
-        hlg: 06
+        hlg: "05->06"
       - vlg: "18->15"
-        hlg: 06
+        hlg: "05->06"
       - vlg: "28->26"
-        hlg: 16
+        hlg: "15->16"
       - vlg: "18->15"
-        hlg: 16
+        hlg: "15->16"
 
   - id: coupler
     rule: R002
     operator: "-|-"
+    block: minimal_matrix
     coords:
       - vlg: 24
         hlg: "09->10"
@@ -31,26 +33,29 @@ operators:
   - id: patch
     rule: R003
     operator: "~"
+    block: minimal_matrix
     coords:
       - vlg: 28
-        hlg: 05
+        hlg: "03->05"
 
   - id: import_node
     rule: R004
     operator: "[-]"
+    block: minimal_matrix
     coords:
       - vlg: "28->26"
-        hlg: 09
+        hlg: "09->10"
       - vlg: "18->15"
-        hlg: 09
+        hlg: "09->10"
       - vlg: "28->26"
-        hlg: 19
+        hlg: "19->20"
       - vlg: "18->15"
-        hlg: 19
+        hlg: "19->20"
 
   - id: export_data
     rule: R005
     operator: "+"
+    block: minimal_matrix
     coords:
       - vlg: 23
         hlg: "15->16"
@@ -60,6 +65,7 @@ operators:
   - id: import_data
     rule: R006
     operator: "-"
+    block: minimal_matrix
     coords:
       - vlg: 23
         hlg: "09->10"
@@ -69,6 +75,7 @@ operators:
   - id: junction_port
     rule: R007
     operator: "[| |]"
+    block: minimal_matrix
     coords:
       - vlg: 24
         hlg: "12->13"
@@ -78,15 +85,17 @@ operators:
   - id: matrix_bridge
     rule: R008
     operator: "[//]"
+    block: matrix_scaffold
     coords:
       - vlg: 12
-        hlg: 13
+        hlg: "12->13"
       - vlg: 10
-        hlg: 13
+        hlg: "12->13"
 
   - id: matrix_core
     rule: R009
     operator: "%"
+    block: matrix_junction
     coords:
       - vlg: 16
         hlg: "06->07"

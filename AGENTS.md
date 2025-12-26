@@ -8,7 +8,7 @@
 - `docs/` captures specs and notes, with primary references in `docs/spec/markdown/`.
 
 ## Build, Test, and Development Commands
-- `uv sync` installs dependencies (Python 3.13+).
+- `uv sync` installs dependencies (Python 3.12.8+).
 - `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix` validates a 3x3 block.
 - `python src/trix_py/tools/trix.py parse examples/blocks/DOCS.trix` parses a `.trix` file to JSON.
 - `python src/trix_py/tools/trix.py index examples --out examples/.index.json` builds an example index.
@@ -16,7 +16,7 @@
 - `python src/geometry_core/tools/trix.py scan src/geometry_core/examples/junctions/matrix_junction_example.md` scans for embedded matrices.
 - `make validate-junction` validates junction operators against the spec.
 - `python -m pytest` runs tests (pytest discovers under `src/`).
-- Python >= 3.13 is required per `pyproject.toml`.
+- Python >= 3.12.8 is required per `pyproject.toml`.
 
 ## Coding Style & Naming Conventions
 - Python: 4-space indentation, Black formatting (`line-length = 120`, skip string normalization), isort with the Black profile, and strict mypy.

@@ -27,6 +27,7 @@ class OperatorExpectation:
     vlg1: int
     hlg0: int
     hlg1: int
+    block: Optional[str] = None
 
 
 def _parse_range(part: str) -> Tuple[int, int]:
@@ -102,18 +103,30 @@ def parse_operator_summary(text: str) -> Tuple[List[OperatorExpectation], List[s
 
     expected: List[OperatorExpectation] = []
     skipped: List[str] = []
+    row_pattern = re.compile(
+        r"^\|\s*(?P<rule>[^|]+?)\s*\|\s*(?P<operator>`[^`]+`)\s*\|\s*"
+        r"(?P<meaning>[^|]+?)\s*\|\s*(?P<coords>[^|]+?)\s*\|\s*$"
+    )
     for line in lines[start_idx:]:
         if not line.strip().startswith("|"):
             break
-        parts = [p.strip() for p in line.strip().split("|")[1:-1]]
-        if len(parts) < 4:
+        match = row_pattern.match(line.strip())
+        if not match:
             continue
-        rule, operator, _meaning, coord_text = parts[:4]
+        rule = match.group("rule").strip()
+        operator = match.group("operator").strip()
+        coord_text = match.group("coords").strip()
         op = operator.strip("` ").strip()
         if not coord_text:
             continue
         tokens = [t.strip() for t in coord_text.split(",") if t.strip()]
         for token in tokens:
+            block: Optional[str] = None
+            if ":" in token:
+                head, tail = token.split(":", 1)
+                if re.match(r"^[A-Za-z0-9_\\-]+$", head.strip()):
+                    block = head.strip().lower()
+                    token = tail.strip()
             coords = _parse_coord_token(token)
             if not coords:
                 skipped.append(f"{rule}:{op}:{token}")
@@ -127,6 +140,7 @@ def parse_operator_summary(text: str) -> Tuple[List[OperatorExpectation], List[s
                         vlg1=v1,
                         hlg0=h0,
                         hlg1=h1,
+                        block=block,
                     )
                     for v0, v1, h0, h1 in coords
                 ]
@@ -163,6 +177,8 @@ def load_expectations(spec_path: Path) -> List[OperatorExpectation]:
         if not op:
             continue
         rule = str(entry.get("rule", "")).strip() or None
+        block = entry.get("block")
+        block = block.strip().lower() if isinstance(block, str) and block.strip() else None
         coords = entry.get("coords") or []
         if not isinstance(coords, list):
             continue
@@ -193,6 +209,7 @@ def load_expectations(spec_path: Path) -> List[OperatorExpectation]:
                     vlg1=v1,
                     hlg0=h0,
                     hlg1=h1,
+                    block=block,
                 )
             )
     return expected

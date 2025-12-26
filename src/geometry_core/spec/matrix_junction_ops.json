@@ -4,18 +4,20 @@
       "id": "export_node",
       "rule": "R001",
       "operator": "(+)",
+      "block": "minimal_matrix",
       "coords": [
-        {"vlg": 28, "hlg": 6},
-        {"vlg": "27->26", "hlg": 6},
-        {"vlg": "18->15", "hlg": 6},
-        {"vlg": "28->26", "hlg": 16},
-        {"vlg": "18->15", "hlg": 16}
+        {"vlg": 28, "hlg": "05->06"},
+        {"vlg": "27->26", "hlg": "05->06"},
+        {"vlg": "18->15", "hlg": "05->06"},
+        {"vlg": "28->26", "hlg": "15->16"},
+        {"vlg": "18->15", "hlg": "15->16"}
       ]
     },
     {
       "id": "coupler",
       "rule": "R002",
       "operator": "-|-",
+      "block": "minimal_matrix",
       "coords": [
         {"vlg": 24, "hlg": "09->10"},
         {"vlg": 24, "hlg": "15->16"},
@@ -27,25 +29,28 @@
       "id": "patch",
       "rule": "R003",
       "operator": "~",
+      "block": "minimal_matrix",
       "coords": [
-        {"vlg": 28, "hlg": 5}
+        {"vlg": 28, "hlg": "03->05"}
       ]
     },
     {
       "id": "import_node",
       "rule": "R004",
       "operator": "[-]",
+      "block": "minimal_matrix",
       "coords": [
-        {"vlg": "28->26", "hlg": 9},
-        {"vlg": "18->15", "hlg": 9},
-        {"vlg": "28->26", "hlg": 19},
-        {"vlg": "18->15", "hlg": 19}
+        {"vlg": "28->26", "hlg": "09->10"},
+        {"vlg": "18->15", "hlg": "09->10"},
+        {"vlg": "28->26", "hlg": "19->20"},
+        {"vlg": "18->15", "hlg": "19->20"}
       ]
     },
     {
       "id": "export_data",
       "rule": "R005",
       "operator": "+",
+      "block": "minimal_matrix",
       "coords": [
         {"vlg": 23, "hlg": "15->16"},
         {"vlg": 21, "hlg": "09->10"}
@@ -55,6 +60,7 @@
       "id": "import_data",
       "rule": "R006",
       "operator": "-",
+      "block": "minimal_matrix",
       "coords": [
         {"vlg": 23, "hlg": "09->10"},
         {"vlg": 21, "hlg": "15->16"}
@@ -64,6 +70,7 @@
       "id": "junction_port",
       "rule": "R007",
       "operator": "[| |]",
+      "block": "minimal_matrix",
       "coords": [
         {"vlg": 24, "hlg": "12->13"},
         {"vlg": 20, "hlg": "12->13"}
@@ -73,15 +80,17 @@
       "id": "matrix_bridge",
       "rule": "R008",
       "operator": "[//]",
+      "block": "matrix_scaffold",
       "coords": [
-        {"vlg": 12, "hlg": 13},
-        {"vlg": 10, "hlg": 13}
+        {"vlg": 12, "hlg": "12->13"},
+        {"vlg": 10, "hlg": "12->13"}
       ]
     },
     {
       "id": "matrix_core",
       "rule": "R009",
       "operator": "%",
+      "block": "matrix_junction",
       "coords": [
         {"vlg": 16, "hlg": "06->07"},
         {"vlg": 16, "hlg": "18->19"},

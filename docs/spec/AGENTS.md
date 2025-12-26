@@ -8,9 +8,10 @@
 - `docs/spec/` collects legacy specs; current canonical specs live under `src/geometry_core/spec/`.
 
 ## Build, Test, and Development Commands
-- `uv sync` installs dependencies (Python 3.13+).
+- `uv sync` installs dependencies (Python 3.12.8+).
 - `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix` validates a `.trix` block.
-- `python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.yaml` validates junction operators.
+- `make validate-junction` validates junction operators against the YAML spec.
+- `python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.json` validates against the JSON spec.
 - `python src/trix_md/tools/trix.py index --repo src/trix_md` builds the Markdown workspace index.
 - `python -m pytest` runs tests (pytest discovers under `src/`).
 
