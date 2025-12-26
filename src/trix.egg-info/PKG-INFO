@@ -93,6 +93,12 @@ python src/geometry_core/tools/trix.py pin src/geometry_core/examples/junctions/
 python src/geometry_core/tools/trix.py content src/geometry_core/examples/junctions/matrix_junction_example.md --repo . --lc L0002:C0023
 ```
 
+Installed entrypoint (after `uv sync`):
+
+```bash
+trix-geometry scan src/geometry_core/examples/junctions/matrix_junction_example.md
+```
+
 ## Current specs
 
 - Kernel: `src/geometry_core/spec/TRIX_KERNEL_v0_3.md`

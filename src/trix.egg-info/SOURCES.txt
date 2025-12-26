@@ -13,6 +13,7 @@ src/geometry_core/tools/trix_validate.py
 src/trix.egg-info/PKG-INFO
 src/trix.egg-info/SOURCES.txt
 src/trix.egg-info/dependency_links.txt
+src/trix.egg-info/entry_points.txt
 src/trix.egg-info/not-zip-safe
 src/trix.egg-info/requires.txt
 src/trix.egg-info/top_level.txt

@@ -59,6 +59,9 @@ Homepage = "https://deadcoast.net"
 Repository = "https://github.com/deadcoast/trix"
 Issues = "https://github.com/deadcoast/trix/issues"
 
+[project.scripts]
+trix-geometry = "geometry_core.tools.trix:main"
+
 [tool.black]
 target-version = ["py312"]
 line-length = 120

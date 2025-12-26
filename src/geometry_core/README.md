@@ -24,6 +24,12 @@ Module entrypoint (from repo root):
 PYTHONPATH=src python -m geometry_core.tools.trix scan src/geometry_core/examples/junctions/matrix_junction_example.md
 ```
 
+Installed entrypoint (after `uv sync`):
+
+```bash
+trix-geometry scan src/geometry_core/examples/junctions/matrix_junction_example.md
+```
+
 From repo root:
 
 ```bash

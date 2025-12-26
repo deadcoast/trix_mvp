@@ -1,0 +1,2 @@
+[console_scripts]
+trix-geometry = geometry_core.tools.trix:main
