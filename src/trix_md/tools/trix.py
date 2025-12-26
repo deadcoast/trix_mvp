@@ -20,7 +20,7 @@ import yaml
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, NoReturn, Optional, Tuple
 
 
 FRONT_MATTER_DELIM = "---"
@@ -32,7 +32,7 @@ class MatrixCell:
     target: str
 
 
-def die(msg: str, code: int = 1) -> None:
+def die(msg: str, code: int = 1) -> NoReturn:
     print(f"ERROR: {msg}", file=sys.stderr)
     raise SystemExit(code)
 
@@ -133,7 +133,10 @@ def validate_matrix_file(path: Path) -> List[str]:
         for cell in cells:
             target_path = resolve_target(path, cell.target)
             if not target_path.exists():
-                die(f"{path}: missing target for cell [{cell.label}] -> {cell.target} (resolved {target_path})")
+                die(
+                    f"{path}: missing target for cell [{cell.label}] -> {cell.target} "
+                    f"(resolved {target_path})"
+                )
 
     # block-specific checks
     if kind == "block":

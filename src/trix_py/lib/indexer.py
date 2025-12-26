@@ -199,7 +199,13 @@ def build_matrix_record(matrix_path: Path) -> MatrixRecord:
             )
         )
 
-    return MatrixRecord(titl=m.titl, path=matrix_path, skin_hint=m.skin_hint, cells=cells)
+    return MatrixRecord(
+        titl=m.titl,
+        path=matrix_path,
+        skin_hint=m.skin_hint,
+        cells=cells,
+        skin=None,
+    )
 
 
 def index_repo(root: Path) -> Dict[str, Any]:

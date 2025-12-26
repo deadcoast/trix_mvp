@@ -28,19 +28,21 @@ import re
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
+import junction_validate
 
 try:
-    import yaml  # type: ignore
-except Exception:  # pragma: no cover
-    yaml = None
+    import yaml as yaml_module  # type: ignore
+except ImportError:  # pragma: no cover
+    yaml_module = None
 
 CELL_RE = re.compile(r"\[(\s*[1-9]\s*)\]")
 TITL_RE = re.compile(r"\[([A-Za-z0-9]{4})\]")  # strict 4-char title token
 
 
 def slot_to_rc(slot: int) -> Tuple[int, int]:
+    """Convert a 1..9 slot to (row, col) in a 3x3 block."""
     if slot < 1 or slot > 9:
         raise ValueError("slot must be 1..9")
     r = (slot - 1) // 3 + 1
@@ -49,22 +51,26 @@ def slot_to_rc(slot: int) -> Tuple[int, int]:
 
 
 def rc_to_slot(r: int, c: int) -> int:
+    """Convert a 1..3 row/col to a slot in a 3x3 block."""
     if r < 1 or r > 3 or c < 1 or c > 3:
         raise ValueError("row/col must be 1..3 for a 3x3 block")
     return (r - 1) * 3 + c
 
 
 def read_text(path: Path) -> str:
+    """Read a text file with UTF-8 decoding and replacement."""
     return path.read_text(encoding="utf-8", errors="replace")
 
 
 def normalize_lines(text: str) -> List[str]:
+    """Normalize tabs to spaces and split into lines."""
     # Normalize tabs to spaces for stable column indexing
     text = text.replace("\t", "    ")
     return text.splitlines()
 
 
 def guess_skin_from_lines(lines: List[str]) -> Optional[str]:
+    """Heuristically infer an ASCII skin from nearby header/row patterns."""
     joined = "\n".join(lines[:8])
     if "| ==[" in joined and "| - [" in joined:
         return "clunk"
@@ -103,6 +109,7 @@ def detect_titl_near(lines: List[str], line_idx: int, anchor_col: int) -> Option
 
 @dataclass
 class CellBox:
+    """Text-space bounding box for a single cell token."""
     slot: int
     token: int
     line: int
@@ -111,11 +118,13 @@ class CellBox:
 
     @property
     def center(self) -> Tuple[int, int]:
+        """Return the (line, col) center of the token."""
         return (self.line, (self.col0 + self.col1) // 2)
 
 
 @dataclass
 class ParsedBlock:
+    """Parsed 3x3 block with rows, coordinates, and skin hint."""
     titl: Optional[str]
     rows: List[List[int]]  # 3 rows x 3 cols of numeric tokens
     row_lines: List[int]  # line indices where each row was found
@@ -165,6 +174,7 @@ def parse_first_block(text: str) -> ParsedBlock:
 
 @dataclass
 class EmbeddedMatrix:
+    """A localized 3x3 block within a junction canvas."""
     titl: Optional[str]
     anchor_line: int
     anchor_col: int
@@ -189,22 +199,23 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
 
     @dataclass(frozen=True)
     class RowCand:
+        """Candidate triple of adjacent cell tokens from a single row."""
         line: int
         anchor_col: int  # col0 of first cell token in the row triple
         toks: List[Tuple[int, int, int]]  # (token, col0, col1) ×3
 
     # Heuristics: inside a 3×3 row, tokens are close; between matrices there's a bigger gap.
-    MAX_WITHIN_GAP = 8
+    max_within_gap = 8
 
-    row_cands_by_line: Dict[int, List[RowCand]] = {}
-
-    for li, line in enumerate(lines):
-        toks = [(int(m.group(1).strip()), m.start(), m.end() - 1) for m in CELL_RE.finditer(line)]
+    def _row_candidates_for_line(line_text: str, line_idx: int) -> List[RowCand]:
+        """Return row candidates from a single text line."""
+        toks = [
+            (int(m.group(1).strip()), m.start(), m.end() - 1)
+            for m in CELL_RE.finditer(line_text)
+        ]
         if len(toks) < 3:
-            continue
-
+            return []
         cands: List[RowCand] = []
-        # Sliding windows of 3 tokens
         for i in range(len(toks) - 2):
             t0, t1, t2 = toks[i], toks[i + 1], toks[i + 2]
             gap1 = t1[1] - t0[1]
@@ -214,16 +225,22 @@ def scan_blocks(text: str) -> List[ParsedBlock]:
                 t0n in (1, 4, 7)
                 and t1n == t0n + 1
                 and t2n == t0n + 2
-                and gap1 <= MAX_WITHIN_GAP
-                and gap2 <= MAX_WITHIN_GAP
+                and gap1 <= max_within_gap
+                and gap2 <= max_within_gap
             ):
-                cands.append(RowCand(line=li, anchor_col=t0[1], toks=[t0, t1, t2]))
-        if cands:
-            # De-dup candidates by anchor_col (keep left-most triple for that anchor)
-            dedup: Dict[int, RowCand] = {}
-            for c in cands:
-                dedup.setdefault(c.anchor_col, c)
-            row_cands_by_line[li] = list(dedup.values())
+                cands.append(RowCand(line=line_idx, anchor_col=t0[1], toks=[t0, t1, t2]))
+        if not cands:
+            return []
+        dedup: Dict[int, RowCand] = {}
+        for cand in cands:
+            dedup.setdefault(cand.anchor_col, cand)
+        return list(dedup.values())
+
+    row_cands_by_line: Dict[int, List[RowCand]] = {}
+
+    for li, line in enumerate(lines):
+        if cands := _row_candidates_for_line(line, li):
+            row_cands_by_line[li] = cands
 
     blocks: List[ParsedBlock] = []
     seen: set[Tuple[int, int]] = set()  # (start_line, anchor_col)
@@ -321,7 +338,7 @@ def scan_junction(text: str) -> List[EmbeddedMatrix]:
 def gutter_overlay(text: str, start_line: int = 0) -> str:
     """Overlay L#### and C#### gutters on any text."""
     lines = normalize_lines(text)
-    maxlen = max((len(l) for l in lines), default=0)
+    maxlen = max((len(line_text) for line_text in lines), default=0)
 
     ones = "".join(str(i % 10) for i in range(maxlen))
     tens = "".join(str((i // 10) % 10) if i % 10 == 0 else " " for i in range(maxlen))
@@ -357,8 +374,8 @@ def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, 
     """
     # Find row line by label
     row_line = None
-    for i, l in enumerate(lines):
-        m = re.match(r"\|(\d{2})\|", l)
+    for i, line_text in enumerate(lines):
+        m = re.match(r"\|(\d{2})\|", line_text)
         if not m:
             continue
         if int(m[1]) == vlg:
@@ -367,7 +384,10 @@ def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, 
     if row_line is None:
         raise ValueError(f"Could not find vlg row {vlg:02d} in file")
 
-    hlabel_idx = next((i for i, l in enumerate(lines) if re.match(r"\|01\|02\|", l)), None)
+    hlabel_idx = next(
+        (i for i, line_text in enumerate(lines) if re.match(r"\|01\|02\|", line_text)),
+        None,
+    )
     if hlabel_idx is None:
         raise ValueError("Could not find horizontal gutter line starting with '|01|02|'")
 
@@ -386,6 +406,12 @@ def _guttered_vlg_hlg_to_lc(lines: List[str], vlg: int, hlg: int) -> Tuple[int, 
 def resolve_coordinate(text: str, line: int, col: int) -> Dict[str, object]:
     """Resolve an absolute (line, col) to an embedded matrix + slot."""
     lines = normalize_lines(text)
+    if line < 0 or line >= len(lines):
+        return {
+            "line": line,
+            "col": col,
+            "hit": None,
+        }
     embedded = scan_junction(text)
 
     # Compute candidate token hits
@@ -424,14 +450,23 @@ def resolve_coordinate(text: str, line: int, col: int) -> Dict[str, object]:
     }
 
 
-def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int) -> Dict[str, object]:
+def extract_region_vlg_hlg(
+    text: str,
+    vlg0: int,
+    vlg1: int,
+    hlg0: int,
+    hlg1: int,
+) -> Dict[str, Any]:
     """Extract a rectangular region from a native-gutter junction canvas (vlg/hlg).
 
     Returns the raw text slice for each vlg row included.
     """
     lines = normalize_lines(text)
 
-    hlabel_idx = next((i for i, l in enumerate(lines) if re.match(r"\|01\|02\|", l)), None)
+    hlabel_idx = next(
+        (i for i, line_text in enumerate(lines) if re.match(r"\|01\|02\|", line_text)),
+        None,
+    )
     if hlabel_idx is None:
         raise ValueError("Could not find horizontal gutter line starting with '|01|02|'")
 
@@ -446,8 +481,8 @@ def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
 
     # Map vlg rows to line indices
     v_to_line: Dict[int, int] = {}
-    for i, l in enumerate(lines):
-        if m := re.match(r"\|(\d{2})\|", l):
+    for i, line_text in enumerate(lines):
+        if m := re.match(r"\|(\d{2})\|", line_text):
             v_to_line[int(m[1])] = i
 
     vmin, vmax = min(vlg0, vlg1), max(vlg0, vlg1)
@@ -474,17 +509,20 @@ def extract_region_vlg_hlg(text: str, vlg0: int, vlg1: int, hlg0: int, hlg1: int
     }
 
 
-def _safe_load_yaml(path: Path) -> Dict[str, object]:
-    if yaml is None:
+def _safe_load_yaml(path: Path) -> Dict[str, Any]:
+    """Load a YAML mapping from disk."""
+    if yaml_module is None:
         raise RuntimeError("PyYAML is not available; cannot load .map.yaml")
-    data = yaml.safe_load(path.read_text(encoding="utf-8", errors="replace")) or {}
+    data = yaml_module.safe_load(path.read_text(encoding="utf-8", errors="replace")) or {}
     if not isinstance(data, dict):
         raise ValueError(f"{path}: expected YAML mapping at root")
     return data
 
 
 def _find_map_for_titl(repo_root: Path, titl: str) -> Optional[Path]:
-    candidates = list(repo_root.rglob(f"{titl}.map.yaml")) + list(repo_root.rglob(f"{titl}.map.yml"))
+    """Find the most likely .map.yaml file for a given titl."""
+    candidates = list(repo_root.rglob(f"{titl}.map.yaml"))
+    candidates += list(repo_root.rglob(f"{titl}.map.yml"))
     if not candidates:
         return None
 
@@ -495,7 +533,12 @@ def _find_map_for_titl(repo_root: Path, titl: str) -> Optional[Path]:
     return sorted(set(candidates), key=score)[0]
 
 
-def _resolve_cell_binding(map_doc: Dict[str, object], slot: int, token: Optional[int]) -> Optional[Dict[str, object]]:
+def _resolve_cell_binding(
+    map_doc: Dict[str, Any],
+    slot: int,
+    token: Optional[int],
+) -> Optional[Dict[str, Any]]:
+    """Resolve a binding payload for a slot/token from a .map.yaml."""
     cells = map_doc.get("cells")
     if not isinstance(cells, dict):
         return None
@@ -517,7 +560,8 @@ def _read_facet_payload(
     *,
     full: bool,
     max_chars: int,
-) -> Dict[str, object]:
+) -> Dict[str, Any]:
+    """Load facet content or excerpt for a bound node facet."""
     p = Path(facet_path)
     candidates = [repo_root / p, map_path.parent / p]
     for cand in candidates:
@@ -528,9 +572,7 @@ def _read_facet_payload(
                 path_str = str(rel)
             except ValueError:
                 path_str = str(cand)
-            payload = {
-                "path": path_str,
-            }
+            payload: Dict[str, Any] = {"path": path_str}
             if full:
                 payload["content"] = txt
             else:
@@ -550,8 +592,9 @@ def resolve_pin_to_binding(
     full: bool = False,
     max_chars: int = 1400,
     facet_filter: Optional[List[str]] = None,
-) -> Dict[str, object]:
-    out: Dict[str, object] = {
+) -> Dict[str, Any]:
+    """Resolve a pin to its map binding and facet payloads."""
+    out: Dict[str, Any] = {
         "titl": titl,
         "slot": slot,
         "token": token,
@@ -578,7 +621,7 @@ def resolve_pin_to_binding(
 
     facets = binding.get("facets")
     if isinstance(facets, dict):
-        facet_payloads: Dict[str, object] = {}
+        facet_payloads: Dict[str, Any] = {}
         for k, v in facets.items():
             if facet_filter and str(k) not in facet_filter:
                 continue
@@ -603,176 +646,31 @@ def _resolve_pin_location(
     vlg: Optional[int],
     hlg: Optional[int],
 ) -> Tuple[int, int, Dict[str, object]]:
+    """Resolve pin input args into an absolute (line, col) and metadata."""
     if lc:
-        l, c = _parse_lc(lc)
-        return l, c, {"lc": lc, "line": l, "col": c}
+        line_num, col_num = _parse_lc(lc)
+        return line_num, col_num, {"lc": lc, "line": line_num, "col": col_num}
     if line is not None and col is not None:
         return int(line), int(col), {"line": int(line), "col": int(col)}
     if vlg is not None and hlg is not None:
-        l, c = _guttered_vlg_hlg_to_lc(lines, int(vlg), int(hlg))
-        return l, c, {"vlg": int(vlg), "hlg": int(hlg), "line": l, "col": c}
+        line_num, col_num = _guttered_vlg_hlg_to_lc(lines, int(vlg), int(hlg))
+        return (
+            line_num,
+            col_num,
+            {"vlg": int(vlg), "hlg": int(hlg), "line": line_num, "col": col_num},
+        )
     raise SystemExit("pin/content requires either --lc, --line/--col, or --vlg/--hlg")
 
 
-def _parse_range(part: str) -> Tuple[int, int]:
-    part = part.strip()
-    if "->" in part:
-        a, b = part.split("->", 1)
-        return int(a), int(b)
-    return int(part), int(part)
-
-
-def _parse_coord_token(token: str) -> List[Tuple[int, int, int, int]]:
-    token = token.strip()
-    if not token or "/" not in token:
-        return []
-    vlg_part, hlg_part = token.split("/", 1)
-    h0, h1 = _parse_range(hlg_part)
-    v_ranges = [p.strip() for p in vlg_part.split("&")]
-    coords = []
-    for vr in v_ranges:
-        if not vr:
-            continue
-        v0, v1 = _parse_range(vr)
-        coords.append((v0, v1, h0, h1))
-    return coords
-
-
-def _parse_operator_summary(text: str) -> Tuple[List[Dict[str, object]], List[str]]:
-    lines = text.splitlines()
-    start_idx = None
-    for i, line in enumerate(lines):
-        if line.strip().lower().startswith("| rule | operator |"):
-            start_idx = i + 2  # skip header + separator
-            break
-    if start_idx is None:
-        return [], ["Operator Summary table not found"]
-
-    expected: List[Dict[str, object]] = []
-    skipped: List[str] = []
-    for line in lines[start_idx:]:
-        if not line.strip().startswith("|"):
-            break
-        parts = [p.strip() for p in line.strip().split("|")[1:-1]]
-        if len(parts) < 4:
-            continue
-        rule, operator, _meaning, coord_text = parts[:4]
-        op = operator.strip("` ").strip()
-        if not coord_text:
-            continue
-        tokens = [t.strip() for t in coord_text.split(",") if t.strip()]
-        for token in tokens:
-            coords = _parse_coord_token(token)
-            if not coords:
-                skipped.append(f"{rule}:{op}:{token}")
-                continue
-            for v0, v1, h0, h1 in coords:
-                expected.append(
-                    {
-                        "rule": rule,
-                        "operator": op,
-                        "vlg0": v0,
-                        "vlg1": v1,
-                        "hlg0": h0,
-                        "hlg1": h1,
-                    }
-                )
-    return expected, skipped
-
-
-def _load_expectations(spec_path: Path) -> List[Dict[str, object]]:
-    if spec_path.suffix.lower() in {".json"}:
-        data = json.loads(spec_path.read_text(encoding="utf-8", errors="replace"))
-    else:
-        data = _safe_load_yaml(spec_path)
-
-    ops = data.get("operators") if isinstance(data, dict) else data
-    if not isinstance(ops, list):
-        raise ValueError("spec must be a list or include an 'operators' list")
-
-    expected: List[Dict[str, object]] = []
-    for entry in ops:
-        if not isinstance(entry, dict):
-            continue
-        op = str(entry.get("operator", "")).strip()
-        rule = str(entry.get("rule", "")).strip() or None
-        coords = entry.get("coords") or []
-        if not isinstance(coords, list):
-            continue
-        for coord in coords:
-            if not isinstance(coord, dict):
-                continue
-            v = coord.get("vlg")
-            h = coord.get("hlg")
-            if v is None or h is None:
-                continue
-            v0, v1 = _parse_range(str(v)) if isinstance(v, str) else (int(v), int(v))
-            if isinstance(h, list) and len(h) == 2:
-                h0, h1 = int(h[0]), int(h[1])
-            else:
-                h0, h1 = _parse_range(str(h)) if isinstance(h, str) else (int(h), int(h))
-            expected.append(
-                {
-                    "rule": rule,
-                    "operator": op,
-                    "vlg0": v0,
-                    "vlg1": v1,
-                    "hlg0": h0,
-                    "hlg1": h1,
-                }
-            )
-    return expected
-
-
-def _operator_pattern(operator: str) -> re.Pattern[str]:
-    op = operator.strip("` ").strip()
-    patterns = {
-        "(+)": r"\(\+\)",
-        "[-]": r"\[-\]",
-        "-|-": r"\|\-\|\-\|",
-        "~": r"~\|~",
-        "+": r"\| \+ \|",
-        "-": r"\| - \|",
-        "[| |]": r"\[\| \|\]",
-        "[//]": r"\[//\]",
-        "%": r"%",
-    }
-    return re.compile(patterns.get(op, re.escape(op)))
-
-
-def _validate_expectations(text: str, expected: List[Dict[str, object]]) -> Dict[str, object]:
-    errors: List[Dict[str, object]] = []
-    checked = 0
-    for entry in expected:
-        operator = str(entry.get("operator", "")).strip()
-        vlg0 = int(entry["vlg0"])
-        vlg1 = int(entry["vlg1"])
-        hlg0 = int(entry["hlg0"])
-        hlg1 = int(entry["hlg1"])
-        region = extract_region_vlg_hlg(text, vlg0, vlg1, hlg0, hlg1)
-        region_text = "\n".join(r["slice"] for r in region["rows"])
-        pattern = _operator_pattern(operator)
-        checked += 1
-        if not pattern.search(region_text):
-            errors.append(
-                {
-                    "operator": operator,
-                    "rule": entry.get("rule"),
-                    "vlg": [vlg0, vlg1],
-                    "hlg": [hlg0, hlg1],
-                    "region": region_text,
-                }
-            )
-    return {"checked": checked, "errors": errors}
-
-
 def cmd_gutter(args: argparse.Namespace) -> int:
+    """Print a file with overlay L/C gutters."""
     path = Path(args.path)
     print(gutter_overlay(read_text(path)))
     return 0
 
 
 def cmd_addr(args: argparse.Namespace) -> int:
+    """Convert between slot and row/col coordinates."""
     if args.slot is not None:
         r, c = slot_to_rc(args.slot)
         print(json.dumps({"slot": args.slot, "row": r, "col": c}, indent=2))
@@ -785,6 +683,7 @@ def cmd_addr(args: argparse.Namespace) -> int:
 
 
 def cmd_parse(args: argparse.Namespace) -> int:
+    """Parse the first 3x3 block in a file."""
     path = Path(args.path)
     block = parse_first_block(read_text(path))
     print(json.dumps(asdict(block), indent=2))
@@ -792,6 +691,7 @@ def cmd_parse(args: argparse.Namespace) -> int:
 
 
 def cmd_scan(args: argparse.Namespace) -> int:
+    """Scan a junction canvas for embedded 3x3 blocks."""
     path = Path(args.path)
     embedded = scan_junction(read_text(path))
     print(
@@ -816,6 +716,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
 
 
 def cmd_resolve(args: argparse.Namespace) -> int:
+    """Resolve a coordinate to a TRIX address."""
     path = Path(args.path)
     text = read_text(path)
     lines = normalize_lines(text)
@@ -835,6 +736,7 @@ def cmd_resolve(args: argparse.Namespace) -> int:
 
 
 def _parse_facet_filter(raw: Optional[List[str]]) -> Optional[List[str]]:
+    """Normalize facet filter inputs into a list of facet names."""
     if not raw:
         return None
     facets: List[str] = []
@@ -844,6 +746,7 @@ def _parse_facet_filter(raw: Optional[List[str]]) -> Optional[List[str]]:
 
 
 def cmd_pin(args: argparse.Namespace) -> int:
+    """Resolve a coordinate to a binding with facet excerpts."""
     path = Path(args.path)
     text = read_text(path)
     lines = normalize_lines(text)
@@ -878,6 +781,7 @@ def cmd_pin(args: argparse.Namespace) -> int:
 
 
 def cmd_content(args: argparse.Namespace) -> int:
+    """Resolve a coordinate to a binding with full facet content."""
     path = Path(args.path)
     text = read_text(path)
     lines = normalize_lines(text)
@@ -912,19 +816,20 @@ def cmd_content(args: argparse.Namespace) -> int:
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
+    """Validate operator placement using a spec or inline summary table."""
     path = Path(args.path)
     text = read_text(path)
 
     skipped: List[str] = []
     if args.spec:
-        expected = _load_expectations(Path(args.spec))
+        expected = junction_validate.load_expectations(Path(args.spec))
     else:
-        expected, skipped = _parse_operator_summary(text)
+        expected, skipped = junction_validate.parse_operator_summary(text)
 
     if not expected:
         raise SystemExit("validate requires --spec or an Operator Summary table in the file")
 
-    result = _validate_expectations(text, expected)
+    result = junction_validate.validate_expectations(text, expected, extract_region_vlg_hlg)
     result["path"] = str(path)
     if skipped:
         result["skipped"] = skipped
@@ -933,6 +838,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 
 def cmd_extract(args: argparse.Namespace) -> int:
+    """Extract a vlg/hlg rectangular region from a junction canvas."""
     path = Path(args.path)
     text = read_text(path)
     result = extract_region_vlg_hlg(text, args.vlg0, args.vlg1, args.hlg0, args.hlg1)
@@ -941,6 +847,7 @@ def cmd_extract(args: argparse.Namespace) -> int:
 
 
 def cmd_index(args: argparse.Namespace) -> int:
+    """Scan a repo tree for embedded 3x3 blocks and write an index."""
     root = Path(args.root)
     out_path = Path(args.out)
     records = []
@@ -951,13 +858,13 @@ def cmd_index(args: argparse.Namespace) -> int:
             continue
         try:
             text = read_text(p)
-        except Exception:
+        except OSError:
             continue
         if "[" not in text or "]" not in text:
             continue
         try:
             blocks = scan_junction(text)
-        except Exception:
+        except ValueError:
             continue
         if not blocks:
             continue
@@ -981,12 +888,16 @@ def cmd_index(args: argparse.Namespace) -> int:
         )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps({"root": str(root), "records": records}, indent=2), encoding="utf-8")
+    out_path.write_text(
+        json.dumps({"root": str(root), "records": records}, indent=2),
+        encoding="utf-8",
+    )
     print(f"Wrote index: {out_path} ({len(records)} files)")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser."""
     p = argparse.ArgumentParser(prog="trix", description="TRIX geometry-first helper tools")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -1069,6 +980,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    """Entry point for the trix CLI."""
     p = build_parser()
     args = p.parse_args()
     return int(args.func(args))
