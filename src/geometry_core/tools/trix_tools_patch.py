@@ -25,6 +25,7 @@ Usage examples:
 from __future__ import annotations
 
 import argparse
+import importlib
 import importlib.util
 import json
 
@@ -64,11 +65,21 @@ def _semantic_index(repo: Path, semantic_root: Optional[Path] = None) -> Dict[st
 
 
 def _geometry_module(repo: Path):
-    """Load src/geometry_core/tools/trix.py as an importable module."""
-    path = repo / "src" / "geometry_core" / "tools" / "trix.py"
-    if not path.exists():
-        raise FileNotFoundError(f"Expected geometry tool at {path}")
-    return _load_module("trix_geometry_tool", path)
+    """Load geometry_core.tools.trix, with a path fallback."""
+    src_root = repo / "src"
+    if src_root.exists():
+        import sys
+
+        if str(src_root) not in sys.path:
+            sys.path.insert(0, str(src_root))
+
+    try:
+        return importlib.import_module("geometry_core.tools.trix")
+    except ImportError:
+        path = repo / "src" / "geometry_core" / "tools" / "trix.py"
+        if not path.exists():
+            raise FileNotFoundError(f"Expected geometry tool at {path}")
+        return _load_module("trix_geometry_tool", path)
 
 
 def _try_read(path: Path) -> Optional[str]:
