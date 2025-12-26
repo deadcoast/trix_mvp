@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 
-from typing import Dict, List
+from typing import Dict
 
 try:
     from .trix_gutters import normalize_lines
