@@ -16,6 +16,14 @@ python tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .
 python tools/trix.py index examples --out examples/.index.json
 ```
 
+## Junction validation
+
+```bash
+make validate-junction
+# optional JSON spec
+python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.json
+```
+
 ## Where to extend next
 - True 9ode/super parsing (3x3 of child matrices).
 - Cluster (9x9) derived views.

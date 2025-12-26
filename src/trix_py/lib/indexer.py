@@ -1,3 +1,15 @@
+"""
+Docstring for trix_py.lib.indexer
+    '''_summary_
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    '''
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,6 +24,7 @@ from .parser import parse_trix, validate_block_3x3
 
 @dataclass
 class CellBinding:
+
     kind: str  # node | block | 9ode | super | link | empty
     token: str  # raw token in [..]
     slot: int  # 1..9 for block

@@ -1,0 +1,293 @@
+{
+  "editor.tabSize": 4,
+  "editor.rulers": [120],
+  "editor.renderWhitespace": "trailing",
+  "editor.suggestSelection": "first",
+  "editor.suggest.preview": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.stickyScroll.enabled": false,
+  "editor.bracketPairColorization.enabled": false,
+  "editor.cursorSmoothCaretAnimation": "on",
+
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "debug.onTaskErrors": "debugAnyway",
+
+  "explorer.compactFolders": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "explorer.copyRelativePathSeparator": "/",
+
+  "files.autoSave": "onFocusChange",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    "node_modules/**/*": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "files.associations": {
+    "*.pyx": "cython",
+    ".clang*": "yaml",
+    "*.gpj": "jsonc",
+    "*.gvw": "jsonc",
+    "*.hpp.in": "cpp"
+  },
+
+  "workbench.startupEditor": "none",
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter-notebook",
+    "*.md": "default",
+    "*.svg": "default"
+  },
+  "workbench.colorTheme": "One Dark Pro Darker",
+
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.openRepositoryInParentFolders": "always",
+
+  "partialDiff.enableTelemetry": false,
+
+  "prettier.tabWidth": 4,
+  "prettier.singleQuote": true,
+  "prettier.jsxSingleQuote": true,
+  "prettier.trailingComma": "all",
+  "prettier.useEditorConfig": true,
+  "prettier.bracketSpacing": false,
+
+  "markdown.validate.enabled": true,
+
+  "notebook.formatOnSave.enabled": false,
+  "notebook.output.textLineLimit": 20,
+  "notebook.compactView": false,
+  "notebook.diff.ignoreMetadata": true,
+  "notebook.diff.ignoreOutputs": true,
+
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.extraPaths": ["."],
+  "python.analysis.logLevel": "Warning",
+
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  "python.languageServer": "Default",
+
+  "ruff.organizeImports": false,
+  "ruff.fixAll": false,
+  "mypy-type-checker.importStrategy": "fromEnvironment",
+  "black-formatter.importStrategy": "fromEnvironment",
+  "isort.importStrategy": "fromEnvironment",
+
+  "autoDocstring.generateDocstringOnEnter": true,
+  "autoDocstring.quoteStyle": "'''",
+
+  "jupyter.interactiveWindow.creationMode": "perFile",
+  "jupyter.askForKernelRestart": false,
+  "jupyter.themeMatplotlibPlots": true,
+  "jupyter.logging.level": "error",
+
+  "breadcrumbs.showArrays": true,
+  "breadcrumbs.showFunctions": true,
+  "breadcrumbs.showClasses": true,
+  "breadcrumbs.showModules": true,
+  "breadcrumbs.showPackages": true,
+  "breadcrumbs.showVariables": true,
+  "breadcrumbs.showConstants": true,
+  "breadcrumbs.showEnums": true,
+  "breadcrumbs.showProperties": true,
+  "breadcrumbs.showMethods": true,
+  "breadcrumbs.showFields": true,
+  "breadcrumbs.showConstructors": true,
+  "breadcrumbs.showNamespaces": true,
+  "breadcrumbs.showInterfaces": true,
+  "breadcrumbs.showTypeParameters": true,
+
+  "better-comments.tags": [
+    { "tag": "XXX", "color": "#F8C471" },
+    { "tag": "WARN", "color": "#FF6961" },
+    { "tag": "NOTE", "color": "#3498DB" },
+    { "tag": "TODO", "color": "#77C3EC" }
+  ],
+
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true,
+    "rules": {
+      "variable": "#F8C471",
+      "function": "#F8C471",
+      "class": "#F8C471",
+      "type": "#F8C471",
+      "keyword": "#F8C471",
+      "string": "#F8C471",
+      "number": "#F8C471",
+      "comment": "#77C3EC",
+      "operator": "#F8C471"
+    }
+  },
+
+  "codesnap.showWindowControls": false,
+  "codesnap.shutterAction": "copy",
+  "codesnap.backgroundColor": "#abb8c3",
+  "codesnap.boxShadow": "rgba(0, 0, 0, 0.55) 0px 20px 68px",
+  "codesnap.containerPadding": "3em",
+  "codesnap.realLineNumbers": false,
+  "codesnap.roundedCorners": true,
+  "codesnap.showLineNumbers": true,
+  "codesnap.fontSize": 14,
+  "codesnap.fontFamily": "monospace",
+  "codesnap.fontWeight": "400",
+  "codesnap.fontStyle": "normal",
+  "codesnap.codeFontSize": 14,
+  "[python]": {
+    "editor.formatOnType": false,
+    "editor.formatOnSave": false,
+    "editor.tabSize": 4,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+
+  "[cpp]": {
+    "editor.semanticHighlighting.enabled": false,
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[c]": {
+    "editor.semanticHighlighting.enabled": false,
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[plaintext]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[less]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[sass]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[makefile]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[dockerfile]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[git-commit]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[git-rebase]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[gitignore]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[ini]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "[toml]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  }
+}

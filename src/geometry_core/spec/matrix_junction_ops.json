@@ -1,0 +1,97 @@
+{
+  "operators": [
+    {
+      "id": "export_node",
+      "rule": "R001",
+      "operator": "(+)",
+      "coords": [
+        {"vlg": 28, "hlg": 6},
+        {"vlg": "27->26", "hlg": 6},
+        {"vlg": "18->15", "hlg": 6},
+        {"vlg": "28->26", "hlg": 16},
+        {"vlg": "18->15", "hlg": 16}
+      ]
+    },
+    {
+      "id": "coupler",
+      "rule": "R002",
+      "operator": "-|-",
+      "coords": [
+        {"vlg": 24, "hlg": "09->10"},
+        {"vlg": 24, "hlg": "15->16"},
+        {"vlg": 20, "hlg": "09->10"},
+        {"vlg": 20, "hlg": "15->16"}
+      ]
+    },
+    {
+      "id": "patch",
+      "rule": "R003",
+      "operator": "~",
+      "coords": [
+        {"vlg": 28, "hlg": 5}
+      ]
+    },
+    {
+      "id": "import_node",
+      "rule": "R004",
+      "operator": "[-]",
+      "coords": [
+        {"vlg": "28->26", "hlg": 9},
+        {"vlg": "18->15", "hlg": 9},
+        {"vlg": "28->26", "hlg": 19},
+        {"vlg": "18->15", "hlg": 19}
+      ]
+    },
+    {
+      "id": "export_data",
+      "rule": "R005",
+      "operator": "+",
+      "coords": [
+        {"vlg": 23, "hlg": "15->16"},
+        {"vlg": 21, "hlg": "09->10"}
+      ]
+    },
+    {
+      "id": "import_data",
+      "rule": "R006",
+      "operator": "-",
+      "coords": [
+        {"vlg": 23, "hlg": "09->10"},
+        {"vlg": 21, "hlg": "15->16"}
+      ]
+    },
+    {
+      "id": "junction_port",
+      "rule": "R007",
+      "operator": "[| |]",
+      "coords": [
+        {"vlg": 24, "hlg": "12->13"},
+        {"vlg": 20, "hlg": "12->13"}
+      ]
+    },
+    {
+      "id": "matrix_bridge",
+      "rule": "R008",
+      "operator": "[//]",
+      "coords": [
+        {"vlg": 12, "hlg": 13},
+        {"vlg": 10, "hlg": 13}
+      ]
+    },
+    {
+      "id": "matrix_core",
+      "rule": "R009",
+      "operator": "%",
+      "coords": [
+        {"vlg": 16, "hlg": "06->07"},
+        {"vlg": 16, "hlg": "18->19"},
+        {"vlg": 12, "hlg": "06->07"},
+        {"vlg": 12, "hlg": "18->19"},
+        {"vlg": 11, "hlg": "12->13"},
+        {"vlg": 7, "hlg": "12->13"},
+        {"vlg": 6, "hlg": "12->13"},
+        {"vlg": 2, "hlg": "12->13"}
+      ]
+    }
+  ]
+}
