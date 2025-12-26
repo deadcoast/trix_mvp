@@ -62,11 +62,11 @@ R001:
   form: "(+)<alias>"
 R002:
   rule: "Couplers lock a junction span; transforms must not overwrite protected regions."
-  example: "|-|-| at vlg 06-07, hlg 09-10"
+  example: "|-|-| at vlg 24, hlg 09->10"
   form: "-|-"
 R003:
   rule: "Patches are data conduits; connect export lanes to import lanes along the patch."
-  example: "~|~ bridging user -> trixie"
+  example: "~|~ at vlg 28, hlg 05"
   form: "~"
 R004:
   rule: "Import nodes register requirements under the parent alias."
@@ -190,31 +190,55 @@ example:
 ---
 ### [1]
 - `coupler`, `-|-`: locks a junction span so nodes cannot be overwritten or moved by transforms.
+- `operator`: `-|-` in the junction canvas (often drawn as `|-|-|`).
+- `scope`: junction-only; never resolves to a matrix slot.
+- `effect`: marks a protected region; overlays/transforms must not write inside.
 
 ```yaml
 # Direct Example
 ID: coupler
 tag: R002
 operator: "-|-"
+pattern: "|-|-|"
+effect: lock
+scope: junction
+protects:
+  - geometry
+  - bindings
 example: "|-|-|"
 coord:
-  - vlg: 06->07
-  - hlg: 09->10
+  - vlg: 24
+    hlg: 09->10
+  - vlg: 24
+    hlg: 15->16
+  - vlg: 20
+    hlg: 09->10
+  - vlg: 20
+    hlg: 15->16
 ```
 
 ---
 ### [2]
 - `patch`, `~`: connects data workflows between nodes across a junction.
+- `operator`: `~` (often rendered as `~|~`).
+- `scope`: junction-only; forms a route between lanes.
+- `effect`: connects the nearest export lane to the nearest import lane along the patch path.
 
 ```yaml
 # Direct Example
 ID: patch
 tag: R003
 operator: "~"
+pattern: "~|~"
+effect: connect
+scope: junction
+connects:
+  - export_lane
+  - import_lane
 example: "~|~"
 coord:
-  - vlg: 13
-  - hlg: 21->23
+  - vlg: 28
+    hlg: 05
 ```
 
 ---
@@ -222,16 +246,31 @@ coord:
 - `export_node`, `( )`: a node that emits data into the junction.
   - Parent alias is the nearest node label (for example `[user]` or `[trixie]`).
   - Export nodes are normalized via `[alias]` and stored in `<alias>.input`.
+- `operator`: `( )` with `+` to mark emission.
+- `pattern`: `(+)<label>` (if label is omitted, use the parent alias label).
 
 ```yaml
 # Direct Example
 ID: export_node
 tag: R001
 operator: "( )"
+pattern: "(+)<label>"
+effect: export
+parent: user
+alias: u
+writes:
+  - "user.input.u"
 example: "(+)user"
 coord:
-  - vlg: "n/a (see minimal_matrix)"
-  - hlg: "n/a (see minimal_matrix)"
+  - vlg: 28
+    hlg: 06
+    label: "(+)user"
+  - vlg: "27->26,18->15"
+    hlg: 06
+    label: "(+)"
+  - vlg: "28->26,18->15"
+    hlg: 16
+    label: "(+)"
 ```
 
 ---
@@ -246,8 +285,12 @@ tag: R004
 operator: "[ ]"
 example: "[-]req"
 coord:
-  - vlg: "n/a (see minimal_matrix)"
-  - hlg: "n/a (see minimal_matrix)"
+  - vlg: "28->26,18->15"
+    hlg: 09
+    label: "[-] user lane"
+  - vlg: "28->26,18->15"
+    hlg: 19
+    label: "[-] trixie lane"
 ```
 
 ---
@@ -262,8 +305,10 @@ tag: R005
 operator: "+"
 example: "| + |"
 coord:
-  - vlg: "see Matrix Junction example"
-  - hlg: "see Matrix Junction example"
+  - vlg: 23
+    hlg: 15->16
+  - vlg: 21
+    hlg: 09->10
 ```
 
 ---
@@ -278,8 +323,10 @@ tag: R006
 operator: "-"
 example: "| - |"
 coord:
-  - vlg: "see Matrix Junction example"
-  - hlg: "see Matrix Junction example"
+  - vlg: 23
+    hlg: 09->10
+  - vlg: 21
+    hlg: 15->16
 ```
 
 ---
@@ -292,10 +339,12 @@ coord:
 ID: junction_port
 tag: R007
 operator: "[| |]"
-example: "|---|----[| |]----|---|"
+example: "|-|-|----[| |]----|-|-|"
 coord:
-  - vlg: "see minimal_matrix"
-  - hlg: "see minimal_matrix"
+  - vlg: 24
+    hlg: 12->13
+  - vlg: 20
+    hlg: 12->13
 ```
 
 ---
@@ -330,6 +379,81 @@ coord:
   - hlg: "see Matrix Junction example"
 ```
 
+---
+## [10]
+### gutter Templates
+
+---
+#### [10.a]
+##### gutter vertical Ascending
+> gutter_vertical_ascending
+```yaml
+|01|
+|02|
+|03| 
+|04| 
+|05| 
+|06| 
+|07| 
+|08| 
+|09| 
+|10| 
+|11| 
+|12| 
+|13| 
+|14| 
+|16| 
+|17| 
+|18| 
+|19| 
+|20| 
+|21| 
+|22| 
+|23| 
+|24|
+```
+
+---
+#### [10.b]
+##### gutter vertical Descending
+> gutter_vertical_descending
+```yaml
+|24|
+|23|
+|22|
+|21|
+|20|
+|19|
+|18|
+|17|
+|16|
+|15|
+|14|
+|13|
+|12|
+|11|
+|10|
+|09|
+|08|
+|07|
+|06|
+|05|
+|04|
+|03|
+|02|
+|01|
+```
+
+#### [10.c]
+##### gutter horizontal
+
+> gutter_horizontal
+```yaml
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|21|23|24|
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+```
+
 > border
 ```yaml
 +--+-----------------------------------------------------------------+--+
@@ -349,50 +473,55 @@ coord:
 > - Matrix example build with nodes, subnodes, data, and junctions
 
 ```yaml
-+-----------------------------------------------------------------+
-|                                                                 |
-|        -----------------              -----------------         |
-|        |               |              |               |         |
-|        -----------------              -----------------         |
-|        |               |              |               |         |
-|        -----------------              -----------------         |
-|        -----------------              -----------------         |
-|        |               |              |               |         |
-|        -----------------              -----------------         |
-|        |               |              |               |         |
-|        -----------------              -----------------         |
-|                                                                 |
-|         -----------------             -----------------         |
-|         |    [user]     |             |    [trixie]   |         |
-|         -----------------             -----------------         |
-|        ~|~(+)user   [-] |             | (+)       [-] |         |
-|         | (+)       [-] |             | (+)       [-] |         |
-|         | (+)       [-] |             | (+)  req  [-] |         |
-|         |               |             |               |         |
-|         |           |---|----[| |]----|---|           |         |
-|         |           | - |     + -     | + |           |         |
-|         |           |---|   matrix    |---|           |         |
-|         |           | + |             | - |           |         |
-|         |           |---|----[| |]----|---|           |         |
-|         |               |             |               |         |
-|         | (+)       [-] |             | (+)       [-] |         | 
-|         | (+)       [-] |             | (+)       [-] |         |
-|         | (+)       [-] |             | (+)       [-] |         |
-|         | (+)       [-] |             | (+)       [-] |         |
-|         -----------------             -----------------         |
-|                                                                 |
-|         -----------------              -----------------        |
-|         |               |              |               |        |
-|         -----------------              -----------------        |
-|         |               |              |               |        |
-|         -----------------              -----------------        |
-|         -----------------              -----------------        |
-|         |               |              |               |        |
-|         -----------------              -----------------        |
-|         |               |              |               |        |
-|         -----------------              -----------------        |
-|                                                                 |
-+-----------------------------------------------------------------+
++--+-----------------------------------------------------------------+--+
++--+-----------------------------------------------------------------+--+
+|44|+---------------------------------------------------------------+|  |
+|43||                                                               ||  |
+|42||       -----------------              -----------------        ||  |
+|41||       |               |              |               |        ||  |
+|40||       -----------------              -----------------        ||  |
+|39||       |               |              |               |        ||  |
+|38||       -----------------              -----------------        ||  |
+|37||       -----------------              -----------------        ||  |
+|36||       |               |              |               |        ||  |
+|35||       -----------------              -----------------        ||  |
+|34||       |               |              |               |        ||  |
+|33||       -----------------              -----------------        ||  |
+|32||                                                               ||  |
+|31||        -----------------             -----------------        ||  |
+|30||        |    [user]     |             |    [trixie]   |        ||  |
+|29||        -----------------             -----------------        ||  |
+|28||       ~|~(+)user   [-] |             | (+)       [-] |        ||  |
+|27||        | (+)       [-] |             | (+)       [-] |        ||  |
+|26||        | (+)       [-] |             | (+)  req  [-] |        ||  |
+|25||        |               |             |               |        ||  |
+|24||        |           |-|-|----[| |]----|-|-|           |        ||  |
+|23||        |           | - |     + -     | + |           |        ||  |
+|22||        |           |---|   matrix    |---|           |        ||  |
+|21||        |           | + |             | - |           |        ||  |
+|20||        |           |-|-|----[| |]----|-|-|           |        ||  |
+|19||        |               |             |               |        ||  |
+|18||        | (+)       [-] |             | (+)       [-] |        ||  |
+|17||        | (+)       [-] |             | (+)       [-] |        ||  |
+|16||        | (+)       [-] |             | (+)       [-] |        ||  |
+|15||        | (+)       [-] |             | (+)       [-] |        ||  |
+|14||        -----------------             -----------------        ||  |
+|13||                                                               ||  |
+|12||        -----------------              -----------------       ||  |
+|11||        |               |              |               |       ||  |
+|10||        -----------------              -----------------       ||  |
+|09||        |               |              |               |       ||  |
+|08||        -----------------              -----------------       ||  |
+|07||        -----------------              -----------------       ||  |
+|06||        |               |              |               |       ||  |
+|05||        -----------------              -----------------       ||  |
+|04||        |               |              |               |       ||  |
+|03||        -----------------              -----------------       ||  |
+|02||                                                               ||  |
+|01|+---------------------------------------------------------------+|  |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|21|23|24|
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ```
 
 > matrix_scaffold
