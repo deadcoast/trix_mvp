@@ -156,7 +156,7 @@ zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["trix*", "trix.*"]
+include = ["trix*", "trix.*", "geometry_core", "geometry_core.*"]
 
 [tool.setuptools.package-dir]
     "" = "src"

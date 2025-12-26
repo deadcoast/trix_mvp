@@ -30,22 +30,41 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol
 
-tool_root = Path(__file__).resolve().parent
-if str(tool_root) not in sys.path:
-    sys.path.insert(0, str(tool_root))
-
-import junction_validate
-from trix_bindings import _parse_facet_filter, _resolve_pin_location, resolve_pin_to_binding
-from trix_blocks import parse_first_block, rc_to_slot, resolve_coordinate, scan_junction, slot_to_rc
-from trix_gutters import (
-    _guttered_vlg_hlg_to_lc,
-    _parse_lc,
-    extract_region_vlg_hlg,
-    gutter_overlay,
-    normalize_lines,
-    read_text,
-)
-from trix_validate import _extract_labeled_blocks
+try:
+    from . import junction_validate
+    from .trix_bindings import _parse_facet_filter, _resolve_pin_location, resolve_pin_to_binding
+    from .trix_blocks import (
+        parse_first_block,
+        rc_to_slot,
+        resolve_coordinate,
+        scan_junction,
+        slot_to_rc,
+    )
+    from .trix_gutters import (
+        _guttered_vlg_hlg_to_lc,
+        _parse_lc,
+        extract_region_vlg_hlg,
+        gutter_overlay,
+        normalize_lines,
+        read_text,
+    )
+    from .trix_validate import _extract_labeled_blocks
+except ImportError:  # pragma: no cover
+    tool_root = Path(__file__).resolve().parent
+    if str(tool_root) not in sys.path:
+        sys.path.insert(0, str(tool_root))
+    import junction_validate
+    from trix_bindings import _parse_facet_filter, _resolve_pin_location, resolve_pin_to_binding
+    from trix_blocks import parse_first_block, rc_to_slot, resolve_coordinate, scan_junction, slot_to_rc
+    from trix_gutters import (
+        _guttered_vlg_hlg_to_lc,
+        _parse_lc,
+        extract_region_vlg_hlg,
+        gutter_overlay,
+        normalize_lines,
+        read_text,
+    )
+    from trix_validate import _extract_labeled_blocks
 
 
 class _PathArgs(Protocol):

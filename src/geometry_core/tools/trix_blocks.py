@@ -8,7 +8,10 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from trix_gutters import normalize_lines
+try:
+    from .trix_gutters import normalize_lines
+except ImportError:  # pragma: no cover
+    from trix_gutters import normalize_lines
 
 
 CELL_RE = re.compile(r"\[(\s*[1-9]\s*)\]")

@@ -7,7 +7,10 @@ import re
 
 from typing import Dict, List
 
-from trix_gutters import normalize_lines
+try:
+    from .trix_gutters import normalize_lines
+except ImportError:  # pragma: no cover
+    from trix_gutters import normalize_lines
 
 
 def _normalize_block_label(label: str) -> str:

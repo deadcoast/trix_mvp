@@ -1,6 +1,15 @@
 LICENSE
 README.md
 pyproject.toml
+src/geometry_core/__init__.py
+src/geometry_core/tools/__init__.py
+src/geometry_core/tools/junction_validate.py
+src/geometry_core/tools/trix.py
+src/geometry_core/tools/trix_bindings.py
+src/geometry_core/tools/trix_blocks.py
+src/geometry_core/tools/trix_gutters.py
+src/geometry_core/tools/trix_tools_patch.py
+src/geometry_core/tools/trix_validate.py
 src/trix.egg-info/PKG-INFO
 src/trix.egg-info/SOURCES.txt
 src/trix.egg-info/dependency_links.txt

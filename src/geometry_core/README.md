@@ -18,6 +18,12 @@ python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junctio
 python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.json
 ```
 
+Module entrypoint (from repo root):
+
+```bash
+PYTHONPATH=src python -m geometry_core.tools.trix scan src/geometry_core/examples/junctions/matrix_junction_example.md
+```
+
 From repo root:
 
 ```bash

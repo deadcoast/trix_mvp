@@ -6,7 +6,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from trix_gutters import _guttered_vlg_hlg_to_lc, _parse_lc
+try:
+    from .trix_gutters import _guttered_vlg_hlg_to_lc, _parse_lc
+except ImportError:  # pragma: no cover
+    from trix_gutters import _guttered_vlg_hlg_to_lc, _parse_lc
 
 try:
     import yaml as yaml_module  # type: ignore
