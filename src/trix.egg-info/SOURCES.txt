@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/trix.egg-info/PKG-INFO
+src/trix.egg-info/SOURCES.txt
+src/trix.egg-info/dependency_links.txt
+src/trix.egg-info/not-zip-safe
+src/trix.egg-info/requires.txt
+src/trix.egg-info/top_level.txt
+src/trix_md/tools/trix.py
+src/trix_py/lib/__init__.py
+src/trix_py/lib/bundler.py
+src/trix_py/lib/dispatch.py
+src/trix_py/lib/indexer.py
+src/trix_py/lib/parser.py
+src/trix_py/lib/test_early_indexer/__init__.py
+src/trix_py/lib/test_early_indexer/test_early_from_json.py
+src/trix_py/tools/trix.py
