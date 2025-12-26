@@ -1,12 +1,29 @@
 ---
 kind: block
 title: TEST
-description: TEST block (3x3 of nodes).
+description: Testing block — validation, QA, and test suites.
+imports:
+  - CODE
 ---
 
-==[TEST]=======
-| [1](nodes/1.md) [2](nodes/2.md) [3](nodes/3.md) |
-| [4](nodes/4.md) [5](nodes/5.md) [6](nodes/6.md) |
-| [7](nodes/7.md) [8](nodes/8.md) [9](nodes/9.md) |
-===============
+# [TEST] Testing
 
+```
+==[TEST]=======
+- [1] [2] [3] -
+- [4] [5] [6] -
+- [7] [8] [9] -
+===============
+```
+
+| Slot | Name | Link |
+|------|------|------|
+| 1 | Charter | [nodes/1.md](nodes/1.md) |
+| 2 | Inputs | [nodes/2.md](nodes/2.md) |
+| 3 | References | [nodes/3.md](nodes/3.md) |
+| 4 | Backlog | [nodes/4.md](nodes/4.md) |
+| 5 | **Now** | [nodes/5.md](nodes/5.md) |
+| 6 | Decisions | [nodes/6.md](nodes/6.md) |
+| 7 | Outputs | [nodes/7.md](nodes/7.md) |
+| 8 | Validation | [nodes/8.md](nodes/8.md) |
+| 9 | Logs | [nodes/9.md](nodes/9.md) |
