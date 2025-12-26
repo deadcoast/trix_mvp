@@ -3,7 +3,7 @@
 
 Commands:
   - validate : validate matrix structure + links
-  - index    : build trix/.index/trix_index.json
+  - index    : build .index/trix_index.json
   - next     : print next task candidate from TASK block
 
 This is intentionally small: extend to your taste.
@@ -154,8 +154,8 @@ def validate_matrix_file(path: Path) -> List[str]:
 def find_matrix_files(root: Path) -> List[Path]:
     # any file named matrix.md plus hub file(s)
     files: List[Path] = []
-    files.extend(root.glob("trix/hub/*.md"))
-    files.extend(root.glob("trix/blocks/*/matrix.md"))
+    files.extend(root.glob("hub/*.md"))
+    files.extend(root.glob("blocks/*/matrix.md"))
     return sorted(set(files))
 
 
@@ -214,7 +214,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
     repo = Path(args.repo).resolve()
     files = find_matrix_files(repo)
     if not files:
-        die(f"No matrix files found under {repo}/trix")
+        die(f"No matrix files found under {repo}/hub or {repo}/blocks")
     warnings_total: List[str] = []
     for f in files:
         warnings_total.extend(validate_matrix_file(f))
@@ -229,7 +229,8 @@ def cmd_validate(args: argparse.Namespace) -> None:
 def cmd_index(args: argparse.Namespace) -> None:
     repo = Path(args.repo).resolve()
     idx = build_index(repo)
-    out = repo / "trix" / ".index" / "trix_index.json"
+    out = repo / ".index" / "trix_index.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(idx, indent=2), encoding="utf-8")
     print(f"Wrote {out} ({len(idx['blocks'])} matrices, {len(idx['nodes'])} nodes)")
 
@@ -241,7 +242,7 @@ def find_next_task_markdown(path: Path) -> Optional[str]:
 
 def cmd_next(args: argparse.Namespace) -> None:
     repo = Path(args.repo).resolve()
-    idx_path = repo / "trix" / ".index" / "trix_index.json"
+    idx_path = repo / ".index" / "trix_index.json"
     if idx_path.exists():
         idx = json.loads(idx_path.read_text(encoding="utf-8"))
     else:

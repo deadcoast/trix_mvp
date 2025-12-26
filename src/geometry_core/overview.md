@@ -9,11 +9,11 @@ This scaffold proves one thing: **we can keep your ASCII matrix design as the ca
 ## Quickstart
 
 ```bash
-python tools/trix.py validate examples/blocks/TASK.trix
-python tools/trix.py parse examples/blocks/DOCS.trix
-python tools/trix.py zoom examples/blocks/HUB0.trix --cell 1
-python tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .
-python tools/trix.py index examples --out examples/.index.json
+python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix
+python src/trix_py/tools/trix.py parse examples/blocks/DOCS.trix
+python src/trix_py/tools/trix.py zoom examples/blocks/HUB0.trix --cell 1
+python src/trix_py/tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .
+python src/trix_py/tools/trix.py index examples --out examples/.index.json
 ```
 
 ## Where to extend next
@@ -195,39 +195,32 @@ That’s not markdown links. That’s a *geometry-addressable control plane*.
 
 ---
 
-## What I implemented right now to unblock you
+## Current junction tooling
 
-Your existing `src/geometry_core/tools/trix.py` was close, but it couldn’t reliably detect **multiple matrices on the same row lines** (side-by-side junction layouts), which is *mandatory* for your junction ecosystem.
+The geometry-core CLI is now the canonical entry point for junction scanning and gutter-aware validation.
+It supports:
 
-So I upgraded it so it can now:
+- Detecting **multiple embedded 3×3 matrices** in a shared canvas (side-by-side layouts).
+- Resolving `(L,C)` or `(vlg/hlg)` coordinates to `TITL#slot` addresses.
+- Extracting vlg/hlg regions for operator verification.
+- Validating operators against `src/geometry_core/spec/matrix_junction_ops.*`.
 
-- Detect **multiple embedded 3×3 matrices** even when they share the same row lines (like your `matrix_junction_example.md`)
-- Assign the correct **TITL per embedded matrix** (nearest title token in the header line)
-- Record **token bounding boxes** per slot (so coordinates can resolve to `TITL#slot`)
-- Add `resolve`:
-
-  - `(L,C)` → `TITL#slot`
-- Add `extract`:
-
-  - `(vlg/hlg rectangle)` → raw text slice (matches your junction gutter system)
-
-### Download the enhanced repo zip
-
-[Download trix_mvp-main_enhanced.zip](sandbox:/mnt/data/trix_mvp-main_enhanced.zip)
-
-### Quick sanity commands (these now work)
+### Quick sanity commands
 
 ```bash
 # scan a junction with multiple matrices in one canvas
 python src/geometry_core/tools/trix.py scan src/geometry_core/examples/junctions/matrix_junction_example.md
 
 # resolve a coordinate to a TRIX address (matrix+slot)
-python src/geometry_core/tools/trix.py resolve src/geometry_core/examples/junctions/matrix_junction_example.md --line 2 --col 23
+python src/geometry_core/tools/trix.py resolve src/geometry_core/examples/junctions/matrix_junction_example.md --lc L0002:C0023
 # -> "CODE#5"
 
 # extract a vlg/hlg region from your native-gutter diagram style
 python src/geometry_core/tools/trix.py extract src/geometry_core/matrix_junction.md --vlg0 6 --vlg1 7 --hlg0 9 --hlg1 10
 # -> shows "|-|-|" region
+
+# validate operator placements using the canonical spec
+python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.yaml
 ```
 
 This gives you the first “real steering primitive” you need:

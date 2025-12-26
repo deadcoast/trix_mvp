@@ -1,5 +1,10 @@
 # Junction revision
 
+> **Status note:** This file captures an early exploratory pass. The current
+> canonical junction spec lives in `src/geometry_core/spec/MATRIX_JUNCTION_v0_2.md`,
+> and the rendered operator grammar is in `src/geometry_core/matrix_junction.md`.
+> Use those as source of truth; this note is retained for historical context.
+
 ## CRITICAL ISSUE REPORT
 
 - GPT FAILED TO ACCESS THE FULL REPO
@@ -189,7 +194,7 @@ Since I can’t open your repo attachment yet, I built a **drop-in geometry-firs
 Running:
 
 ```bash
-python tools/trix.py gutter examples/junctions/matrix_junction_example.md
+python src/geometry_core/tools/trix.py gutter src/geometry_core/examples/junctions/matrix_junction_example.md
 ```
 
 Produces:

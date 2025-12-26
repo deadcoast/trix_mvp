@@ -1,9 +1,9 @@
 [project]
 name = "trix"
 version = "0.1.0"
-description = "Add your description here"
+description = "matrix agentic steering system"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12.8"
 dependencies = [
     "black>=24.4.2,<25.0.0",
     "isort>=5.13.2,<6.0.0",
@@ -55,7 +55,7 @@ dependencies = [
     "types-pygments>=2.8.0",
 ]
 classifiers = [
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.12.8",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]

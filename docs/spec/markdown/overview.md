@@ -1,5 +1,10 @@
 # Modular Matrix Workflows
 
+> **Status:** Legacy overview. Current canonical specs live in
+> `src/geometry_core/spec/TRIX_KERNEL_v0_3.md` and
+> `src/geometry_core/spec/MATRIX_JUNCTION_v0_2.md`.
+> The junction operator grammar is defined in `src/geometry_core/matrix_junction.md`.
+
 The Modular Matrix Workflow(`trix`) is a layer based, modular, and extensible workflow system that works between project documents, source code, and agentic steerings tasks.
 
 The core idea begind `trix` is to utilize Matrix frameworks, and full scope mathematics to create a management and dispatch system that agenticly coordinates and steers projects.

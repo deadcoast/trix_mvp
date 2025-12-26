@@ -1,9 +1,9 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/trix_py/` contains the geometry-first parser/indexer library and the main CLI in `tools/trix.py`.
-- `src/geometry_core/` provides lower-level geometry helpers, junction tooling, and core specs.
-- `src/trix_md/` holds Markdown matrix scaffolds (`blocks/`, `hub/`) and a lightweight MVP CLI.
+- `src/trix_py/` contains the geometry-first parser/indexer library and the main CLI at `src/trix_py/tools/trix.py` (parse/validate/index/zoom/context/bundle/dispatch).
+- `src/geometry_core/` provides lower-level geometry helpers, junction tooling, and core specs (`src/geometry_core/tools/trix.py`, `src/geometry_core/tools/junction_validate.py`).
+- `src/trix_md/` holds Markdown matrix scaffolds (`blocks/`, `hub/`) and a lightweight MVP CLI at `src/trix_md/tools/trix.py`.
 - `examples/` stores sample `.trix`, `.map.yaml`, and node facet files for validation and indexing.
 - `docs/` captures specs and notes, with primary references in `docs/spec/markdown/`.
 
@@ -11,8 +11,10 @@
 - `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix` validates a 3x3 block.
 - `python src/trix_py/tools/trix.py parse examples/blocks/DOCS.trix` parses a `.trix` file to JSON.
 - `python src/trix_py/tools/trix.py index examples --out examples/.index.json` builds an example index.
+- `python src/trix_py/tools/trix.py bundle TASK-5 --trix-root src/trix_md --format markdown` builds an Agent Protocol bundle.
 - `python src/geometry_core/tools/trix.py scan src/geometry_core/examples/junctions/matrix_junction_example.md` scans for embedded matrices.
-- `python -m pytest` runs tests (looks under `tests/`, which may be empty).
+- `make validate-junction` validates junction operators against the spec.
+- `python -m pytest` runs tests (pytest discovers under `src/`).
 - Python >= 3.13 is required per `pyproject.toml`.
 
 ## Coding Style & Naming Conventions

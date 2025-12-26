@@ -1,5 +1,8 @@
 # TRIX Kernel v0.2
 
+> Legacy draft. Current specs live in `src/geometry_core/spec/TRIX_KERNEL_v0_3.md` and
+> `src/geometry_core/spec/MATRIX_JUNCTION_v0_2.md`. CLI paths below match the repo layout.
+
 # TRIX Engine Kernel v0.1 (geometry-first)
 
 This kernel is **not** "a bunch of markdown links".
@@ -59,11 +62,11 @@ cells:
 ```
 
 ## CLI
-- `python tools/trix.py parse examples/blocks/TASK.trix`
-- `python tools/trix.py validate examples/blocks/TASK.trix`
-- `python tools/trix.py zoom examples/blocks/HUB0.trix --cell 1`
-- `python tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .`
-- `python tools/trix.py index examples --out examples/.index.json`
+- `python src/trix_py/tools/trix.py parse examples/blocks/TASK.trix`
+- `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix`
+- `python src/trix_py/tools/trix.py zoom examples/blocks/HUB0.trix --cell 1`
+- `python src/trix_py/tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .`
+- `python src/trix_py/tools/trix.py index examples --out examples/.index.json`
 
 ## Where to extend next
 <!--
@@ -194,22 +197,22 @@ I took your MVP and filled in the missing “kernel contracts”:
 - Implemented **block `imports`** as the first “plug-in/merge” mechanism
 - Added new CLI commands:
 
-  - `query` → filter nodes by block/type/status/tag
-  - `context` → output an *agent-ready context bundle* for any node (markdown or json)
+  - `context` → output a quick JSON bundle for a cell in a `.trix` block
+  - `bundle` → build Agent Protocol bundles from `src/trix_md`
+  - `dispatch` → select the next actionable cell (Agent Protocol)
 - Updated `TASK` to import `AGNT`, `DOCS`, `ARCH` so context automatically pulls steering + decisions
 
-Download it here:
+Legacy zip reference (archived; use repo commands below):
 
 [Download trix_kernel_v0_2.zip](sandbox:/mnt/data/trix_kernel_v0_2.zip)
 
-Example usage after unzip:
+Example usage in this repo:
 
 ```bash
-python tools/trix.py --repo . validate
-python tools/trix.py --repo . index
-python tools/trix.py --repo . query --block TASK --type task
-python tools/trix.py --repo . context --node TASK-5
-python tools/trix.py --repo . next
+python src/trix_md/tools/trix.py validate --repo src/trix_md
+python src/trix_md/tools/trix.py index --repo src/trix_md
+python src/trix_py/tools/trix.py bundle TASK-5 --trix-root src/trix_md --format markdown
+python src/trix_py/tools/trix.py dispatch --trix-root src/trix_md --blocks TASK --json
 ```
 
 ---

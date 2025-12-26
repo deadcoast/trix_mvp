@@ -10,17 +10,17 @@ This repo is a starter structure for a **trix** (Modular Matrix Workflow) ecosys
 ## Quick start
 
 ```bash
-python tools/trix.py validate
-python tools/trix.py index
-python tools/trix.py next
+python src/trix_md/tools/trix.py validate --repo src/trix_md
+python src/trix_md/tools/trix.py index --repo src/trix_md
+python src/trix_md/tools/trix.py next --repo src/trix_md
 ```
 
 ## Layout
 
-- `trix/hub/` — your central *hub* 9ode (3x3 of blocks)
-- `trix/blocks/<TITL>/matrix.md` — a block (3x3 of nodes)
-- `trix/blocks/<TITL>/nodes/<1-9>.md` — the 9 node files inside a block
-- `trix/.index/trix_index.json` — generated index
+- `hub/` — your central *hub* 9ode (3x3 of blocks)
+- `blocks/<TITL>/matrix.md` — a block (3x3 of nodes)
+- `blocks/<TITL>/nodes/<1-9>.md` — the 9 node files inside a block
+- `.index/trix_index.json` — generated index
 
 ## Conventions (MVP)
 

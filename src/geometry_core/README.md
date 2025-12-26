@@ -8,12 +8,14 @@ Geometry-first helpers for TRIX:
 ## Quickstart
 
 ```bash
-python tools/trix.py gutter examples/junctions/matrix_junction_example.md
-python tools/trix.py parse examples/blocks/TASK.trix
-python tools/trix.py scan examples/junctions/matrix_junction_example.md
-python tools/trix.py index . --out .trix/index.json
-python tools/trix.py validate ../geometry_core/matrix_junction.md --spec ../geometry_core/spec/matrix_junction_ops.yaml
-python tools/trix.py validate ../geometry_core/matrix_junction.md --spec ../geometry_core/spec/matrix_junction_ops.json
+python src/geometry_core/tools/trix.py gutter src/geometry_core/examples/junctions/matrix_junction_example.md
+python src/geometry_core/tools/trix.py scan src/geometry_core/examples/junctions/matrix_junction_example.md
+python src/geometry_core/tools/trix.py resolve src/geometry_core/examples/junctions/matrix_junction_example.md --lc L0002:C0023
+python src/geometry_core/tools/trix.py pin src/geometry_core/examples/junctions/matrix_junction_example.md --repo . --lc L0002:C0023
+python src/geometry_core/tools/trix.py content src/geometry_core/examples/junctions/matrix_junction_example.md --repo . --lc L0002:C0023
+python src/geometry_core/tools/trix.py index . --out .trix/index.json
+python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.yaml
+python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.json
 ```
 
 From repo root:

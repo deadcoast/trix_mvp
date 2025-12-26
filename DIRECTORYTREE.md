@@ -1,17 +1,30 @@
 # DIRECTORYTREE
 
 ```yaml
-.
+trix
+├── AGENTS.md
+├── CLAUDE.md
+├── DIRECTORYTREE.md
+├── Makefile
+├── README.md
 ├── docs
 │   ├── notes
 │   │   └── junction_revision.md
 │   └── spec
 │       ├── AGENTS.md
-│       └── markdown
-│           ├── ascii_design_lib.md
-│           ├── overview.md
-│           ├── spec-v0.1.md
-│           └── spec-v0.2.md
+│       ├── AGENT_PROTOCOL_v0.1.md
+│       ├── CELL_SCHEMA_v0.1.md
+│       ├── COMPOSITION_v0.1.md
+│       ├── COMPOUNDING_v0.1.md
+│       ├── SLOT_SEMANTICS_v0.1.md
+│       ├── markdown
+│       │   ├── ascii_design_lib.md
+│       │   ├── overview.md
+│       │   ├── spec-v0.1.md
+│       │   └── spec-v0.2.md
+│       └── schemas
+│           ├── cell.schema.yaml
+│           └── slot_semantics.schema.yaml
 ├── examples
 │   ├── blocks
 │   │   ├── DOCS.trix
@@ -28,9 +41,10 @@
 │       └── TASK-5.task.md
 ├── main.py
 ├── pyproject.toml
-├── README.md
 ├── src
+│   ├── FutureFocus.md
 │   ├── geometry_core
+│   │   ├── README.md
 │   │   ├── examples
 │   │   │   ├── blocks
 │   │   │   │   ├── CODE.trix
@@ -40,13 +54,26 @@
 │   │   │       └── matrix_junction_example.md
 │   │   ├── matrix_junction.md
 │   │   ├── overview.md
-│   │   ├── README.md
 │   │   ├── spec
 │   │   │   ├── MATRIX_JUNCTION_v0_2.md
-│   │   │   └── TRIX_KERNEL_v0_3.md
+│   │   │   ├── TRIX_KERNEL_v0_3.md
+│   │   │   ├── matrix_junction_ops.json
+│   │   │   └── matrix_junction_ops.yaml
 │   │   └── tools
-│   │       └── trix.py
+│   │       ├── junction_validate.py
+│   │       ├── trix.py
+│   │       ├── trix_tools_patch.md
+│   │       ├── trix_tools_patch.py
+│   │       └── trix_tools_patch_cot.md
+│   ├── trix.egg-info
+│   │   ├── PKG-INFO
+│   │   ├── SOURCES.txt
+│   │   ├── dependency_links.txt
+│   │   ├── not-zip-safe
+│   │   ├── requires.txt
+│   │   └── top_level.txt
 │   ├── trix_md
+│   │   ├── README.md
 │   │   ├── blocks
 │   │   │   ├── AGNT
 │   │   │   │   ├── matrix.md
@@ -157,28 +184,28 @@
 │   │   │           ├── 8.md
 │   │   │           └── 9.md
 │   │   ├── hub
+│   │   │   ├── HUB0.map.yaml
 │   │   │   └── HUB0.md
-│   │   ├── README.md
 │   │   ├── slots.md
 │   │   ├── spec
+│   │   │   └── .trix.config.json
 │   │   └── tools
 │   │       ├── trix.code-workspace
 │   │       └── trix.py
 │   ├── trix_py
 │   │   ├── lib
+│   │   │   ├── TODO.md
 │   │   │   ├── __init__.py
-│   │   │   ├── __pycache__
-│   │   │   │   ├── __init__.cpython-311.pyc
-│   │   │   │   ├── indexer.cpython-311.pyc
-│   │   │   │   └── parser.cpython-311.pyc
+│   │   │   ├── bundler.py
+│   │   │   ├── dispatch.py
 │   │   │   ├── indexer.py
-│   │   │   └── parser.py
+│   │   │   ├── parser.py
+│   │   │   └── test_early_indexer
+│   │   │       ├── __init__.py
+│   │   │       └── test_early_from_json.py
 │   │   └── tools
 │   │       └── trix.py
 │   └── trixie
 │       └── trixie.md
 └── uv.lock
-
-44 directories, 133 files
-~/github/trix main* ⇡      
 ```

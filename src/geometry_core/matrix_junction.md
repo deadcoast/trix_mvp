@@ -410,10 +410,11 @@ coord:
 | R008 | `[//]` | matrix bridge | 12/13, 10/13 |
 | R009 | `%` | matrix core | 16/06->07, 16/18->19, 12/06->07, 12/18->19, 11/12->13, 07/12->13, 06/12->13, 02/12->13 |
 
-Validation uses a data-driven spec at `src/geometry_core/spec/matrix_junction_ops.yaml`:
+Validation uses a data-driven spec at `src/geometry_core/spec/matrix_junction_ops.yaml` (or `.json`):
 
 ```bash
 python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.yaml
+python src/geometry_core/tools/trix.py validate src/geometry_core/matrix_junction.md --spec src/geometry_core/spec/matrix_junction_ops.json
 ```
 
 ## [10]

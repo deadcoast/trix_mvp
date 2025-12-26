@@ -1,5 +1,8 @@
 # TRIX Engine Kernel v0.1 (geometry-first)
 
+> Legacy draft. Current specs live in `src/geometry_core/spec/TRIX_KERNEL_v0_3.md` and
+> `src/geometry_core/spec/MATRIX_JUNCTION_v0_2.md`. CLI paths below match the repo layout.
+
 This kernel is **not** "a bunch of markdown links".
 It treats your ASCII matrix geometry as the **primary structure** and everything else (docs, tasks, code, steering) as **facets attached to cells**.
 
@@ -57,11 +60,11 @@ cells:
 ```
 
 ## CLI
-- `python tools/trix.py parse examples/blocks/TASK.trix`
-- `python tools/trix.py validate examples/blocks/TASK.trix`
-- `python tools/trix.py zoom examples/blocks/HUB0.trix --cell 1`
-- `python tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .`
-- `python tools/trix.py index examples --out examples/.index.json`
+- `python src/trix_py/tools/trix.py parse examples/blocks/TASK.trix`
+- `python src/trix_py/tools/trix.py validate examples/blocks/TASK.trix`
+- `python src/trix_py/tools/trix.py zoom examples/blocks/HUB0.trix --cell 1`
+- `python src/trix_py/tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .`
+- `python src/trix_py/tools/trix.py index examples --out examples/.index.json`
 
 ## Where to extend next
 - True 9ode/super parsing (3x3 of child matrices).
@@ -69,4 +72,4 @@ cells:
 - Merge/plug operators (mount block into a cell).
 - Transforms as first-class nodes (task->code, code->docs).
 - Facets as first-class nodes (task->steer, task->config).
-- CLI for zooming, context, and next task.
+- Unified CLI for querying indexed nodes.

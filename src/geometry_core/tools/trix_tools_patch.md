@@ -15,7 +15,7 @@ Below is the deep, full-scope synthesis of what’s in the repo *right now*, wha
 - `spec/TRIX_KERNEL_v0_3.md` → establishes **geometry-first truth**, multi-facet cells, and kernel ops like **mount / overlay / splice / transform**.
 - `spec/MATRIX_JUNCTION_v0_2.md` → establishes the **junction canvas concept** + the **gutters** needed for pinpoint referencing.
 - `matrix_junction.md` → your new “junction grammar” draft: export/import nodes, aliasing rules, couplers, patches, and the coordinate gutter concept.
-- `tools/trix.py` → a working CLI for:
+- `src/geometry_core/tools/trix.py` → a working CLI for:
 
   - **gutter overlays**
   - scanning **embedded 3×3 matrices** inside junction canvases

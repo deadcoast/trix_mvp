@@ -32,6 +32,8 @@ python src/trix_py/tools/trix.py parse examples/blocks/DOCS.trix
 python src/trix_py/tools/trix.py index examples --out examples/.index.json
 python src/trix_py/tools/trix.py zoom examples/blocks/HUB0.trix --cell 5
 python src/trix_py/tools/trix.py context examples/blocks/TASK.trix --cell 5 --repo .
+python src/trix_py/tools/trix.py bundle TASK-5 --trix-root src/trix_md --format markdown
+python src/trix_py/tools/trix.py dispatch --trix-root src/trix_md --blocks TASK --json
 ```
 
 **Geometry Core (junction scanning, multi-matrix)**:
@@ -40,13 +42,16 @@ python src/geometry_core/tools/trix.py gutter <file>           # Add L/C gutters
 python src/geometry_core/tools/trix.py scan <file>             # Find all embedded 3×3 blocks
 python src/geometry_core/tools/trix.py resolve <file> --lc L42:C100  # Resolve coordinate to matrix+slot
 python src/geometry_core/tools/trix.py addr --slot 5           # Convert slot↔row/col
+python src/geometry_core/tools/trix.py pin <file> --repo . --lc L42:C100    # Resolve to binding + facet excerpts
+python src/geometry_core/tools/trix.py content <file> --repo . --lc L42:C100 # Resolve to full facet contents
+python src/geometry_core/tools/trix.py validate <file> --spec src/geometry_core/spec/matrix_junction_ops.yaml
 ```
 
 **Markdown MVP (trix_md)**:
 ```bash
-python src/trix_md/tools/trix.py validate --repo .
-python src/trix_md/tools/trix.py index --repo .
-python src/trix_md/tools/trix.py next --repo .
+python src/trix_md/tools/trix.py validate --repo src/trix_md
+python src/trix_md/tools/trix.py index --repo src/trix_md
+python src/trix_md/tools/trix.py next --repo src/trix_md
 ```
 
 ## Architecture
@@ -56,15 +61,17 @@ python src/trix_md/tools/trix.py next --repo .
 - **`src/trix_py/`**: Core parser/indexer library
   - `lib/parser.py`: Extracts `TrixMatrix` AST from `.trix` files (skin-agnostic)
   - `lib/indexer.py`: Builds `MatrixRecord` with cell bindings from YAML mappings
-  - `tools/trix.py`: CLI for parse/validate/index/zoom/context
+  - `tools/trix.py`: CLI for parse/validate/index/zoom/context/bundle/dispatch
 
 - **`src/geometry_core/`**: Low-level geometry helpers
-  - `tools/trix.py`: Multi-matrix scanning for junction canvases, gutter overlays, coordinate resolution
+  - `tools/trix.py`: Junction scanning, gutter overlays, coordinate resolution, validation, pin/content
+  - `tools/junction_validate.py`: Data-driven operator validation helpers
   - Handles side-by-side matrices in a single file
 
 - **`src/trix_md/`**: Markdown-based matrix scaffold
-  - `blocks/<TITL>/matrix.md` + `nodes/{1-9}.md` structure
+  - `blocks/<TITL>/matrix.md` + `nodes/{1-9}.md` structure and `hub/*.md` entrypoints
   - YAML front matter for metadata
+  - `.index/trix_index.json` for the generated index
 
 ### Key Domain Concepts
 
