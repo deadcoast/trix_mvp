@@ -16,11 +16,11 @@ import json
 import os
 import re
 import sys
+import yaml
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-import yaml
 
 
 FRONT_MATTER_DELIM = "---"

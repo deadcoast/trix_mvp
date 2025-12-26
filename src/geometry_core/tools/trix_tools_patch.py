@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -39,10 +40,10 @@ def _load_module(name: str, path: Path):
     mod = importlib.util.module_from_spec(spec)
     # dataclasses (and some stdlib internals) assume the module is present in sys.modules
     import sys
+
     sys.modules[name] = mod
     spec.loader.exec_module(mod)  # type: ignore[attr-defined]
     return mod
-
 
 
 def _semantic_index(repo: Path, semantic_root: Optional[Path] = None) -> Dict[str, Any]:
@@ -52,6 +53,7 @@ def _semantic_index(repo: Path, semantic_root: Optional[Path] = None) -> Dict[st
         raise FileNotFoundError("Expected src/trix_py to exist.")
     # Put src/trix_py on sys.path so imports work
     import sys
+
     if str(trix_py) not in sys.path:
         sys.path.insert(0, str(trix_py))
 
@@ -260,14 +262,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     ui = sub.add_parser("unified-index", help="build a combined semantic+junction index JSON")
     ui.add_argument("--repo", default=".")
-    ui.add_argument("--semantic-root", default="examples", help="path (relative to --repo) to index for semantic .trix + .map.yaml truth")
+    ui.add_argument(
+        "--semantic-root",
+        default="examples",
+        help="path (relative to --repo) to index for semantic .trix + .map.yaml truth",
+    )
     ui.add_argument("--out", required=True)
     ui.set_defaults(func=cmd_unified_index)
 
     ca = sub.add_parser("context-at", help="resolve a coordinate in a junction and print a context bundle")
     ca.add_argument("path")
     ca.add_argument("--repo", default=".")
-    ca.add_argument("--semantic-root", default="examples", help="path (relative to --repo) to index for semantic .trix + .map.yaml truth")
+    ca.add_argument(
+        "--semantic-root",
+        default="examples",
+        help="path (relative to --repo) to index for semantic .trix + .map.yaml truth",
+    )
     ca.add_argument("--format", choices=["json", "md"], default="md")
     ca.add_argument("--line", type=int)
     ca.add_argument("--col", type=int)

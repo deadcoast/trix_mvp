@@ -4,15 +4,17 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+
 from pathlib import Path
+
 
 # Ensure repo root is on sys.path so `lib.*` imports work when running from /tools
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from lib.parser import parse_trix, validate_block_3x3
 from lib.indexer import build_matrix_record, index_repo, save_index
+from lib.parser import parse_trix, validate_block_3x3
 
 
 def cmd_parse(args: argparse.Namespace) -> int:
@@ -118,7 +120,7 @@ def cmd_context(args: argparse.Namespace) -> int:
 def cmd_bundle(args: argparse.Namespace) -> int:
     """Build a context bundle for a cell (new Agent Protocol format)."""
     from lib.bundler import build_context_bundle, bundle_to_json, bundle_to_markdown
-    
+
     trix_root = Path(args.trix_root)
     bundle = build_context_bundle(
         cell_id=args.cell,
@@ -126,28 +128,28 @@ def cmd_bundle(args: argparse.Namespace) -> int:
         include_imports=not args.no_imports,
         include_spatial=not args.no_spatial,
     )
-    
+
     if args.format == "json":
         print(bundle_to_json(bundle))
     else:
         print(bundle_to_markdown(bundle))
-    
+
     return 0
 
 
 def cmd_dispatch(args: argparse.Namespace) -> int:
     """Select the next actionable cell."""
-    from lib.dispatch import select_next, dispatch_to_json
-    
+    from lib.dispatch import dispatch_to_json, select_next
+
     trix_root = Path(args.trix_root)
     block_filter = args.blocks.split(",") if args.blocks else None
-    
+
     result = select_next(
         trix_root=trix_root,
         block_filter=block_filter,
         priority_max=args.priority,
     )
-    
+
     if args.json:
         print(dispatch_to_json(result))
     else:
@@ -161,7 +163,7 @@ def cmd_dispatch(args: argparse.Namespace) -> int:
                     print(f"  - {alt.cell_id} (score: {alt.score})")
         else:
             print(f"No selection: {result.reason}")
-    
+
     return 0 if result.selected else 1
 
 
