@@ -53,7 +53,6 @@ dependencies = [
     "types-freezegun>=1.1.0",
     "types-tabulate>=0.8.0",
     "types-pygments>=2.8.0",
-    "types-ruamel.yaml>=0.17.0",
 ]
 classifiers = [
     "Programming Language :: Python :: 3.13",
