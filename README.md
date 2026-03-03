@@ -1,7 +1,5 @@
 # TRIX Engine v0.1 (geometry-first)
 
-This scaffold proves one thing: **we can keep your ASCII matrix design as the canonical truth** and still have a queryable steering database.
-
 - Geometry is parsed from ASCII skins (prth/clunk/etc.)
 - Meaning is attached via mapping (multi-facet nodes)
 - Index preserves (row/col/slot) so the matrix stays a spatial system
